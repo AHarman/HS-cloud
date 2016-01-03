@@ -37,7 +37,7 @@ def normaliseManaImages(cumManaImages):
 		maxVal = np.amax(image)
 		for row in range(height):
 			for col in range(width):
-				image[row, col] *= (255.0 / maxVal)
+				image[row, col] = float(image[row, col]) * (255.0 / maxVal)
 	return cumManaImages
 
 createCumulativeManaImages()
