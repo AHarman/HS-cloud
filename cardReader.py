@@ -26,13 +26,13 @@ class Card:
 		self.hero = None
 		self.rarity = None
 		self.cardType = None
+		self.mana = None
 
 	def show(self):
 		return self.cardImage.show()
 	
 
 class screenshotParser:
-	# All these use 1366x768 as the resolution
 	# Create dictionaries with resolutions as key to extend this
 	cardLocations    = [( 286,  165,  518,  534),  ( 527,  165,  755,  534),  ( 768,  165, 1000,  534),  (1009,  165, 1241,  534),
 	                    ( 286,  544,  518,  913),  ( 527,  544,  755,  913),  ( 768,  544, 1000,  913),  (1009,  544, 1241,  913)]
@@ -104,14 +104,9 @@ class screenshotParser:
 	# TODO: Make sure this works for mana of 10, 12 and 20 (I don't have those cards in the test data)
 	# Could optimise this as you know that, say, you're not going to go from 1 mana to 5 because of basic cards
 	def getCardMana(self, card, lowerLimit=0):
-		#refWidth  = 30
-		#refHeight = 40
 		manaImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
-		#print manaImage.getbbox()
-		#manaImage.show()
-		#raw_input("cmon")
 
-		bestGuess = 0
+		bestGuess = None
 		bestMetric = 0
 		metrics = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}
 		for currentMana in range(11) + [12, 20]:
@@ -119,25 +114,42 @@ class screenshotParser:
 			currentManaRef = self.manaArrays[currentMana]
 
 			for i in range(len(manaImage)):
-				metrics[currentMana] += 0xFF - abs(int(manaImage[i]) - int(currentManaRef[i]))
+				if currentManaRef[i] in [0x00, 0xFF] and manaImage[i] != currentManaRef[i]:
+					metrics[currentMana] -= 255
+				else:
+					metrics[currentMana] += 0xFF - abs(int(manaImage[i]) - int(currentManaRef[i]))
+			metrics[currentMana] /= len(manaImage)
 
-		for mana in range(11) + [12, 20]:
-			metrics[mana] /= len(manaImage)
-			if bestMetric < metrics[mana]:
-				bestMetric = metrics[mana]
-				bestGuess = mana
+			if metrics[currentMana] > bestMetric:
+				bestMetric = metrics[currentMana]
+				bestGuess = currentMana
+
+		# if metrics[20] > 200:
+		# 	return 20
+		# if metrics[12] > 200:
+		# 	return 12
+		# if metrics[10] > 200:
+		# 	return 10
+		# if metrics[ 9] > 210:
+		# 	return 9
+		# if metrics[ ]
+		# if metrics[ 7] > 190:
+		# 	return 7
+
+		# mins = [160, 135, 90, 85, 95, 95, 55, 195, 165, 155]
+		# possibles = []
+		# for i in [0, 1, 2, 3, 4, 5, 6, 8, 9]:
+		# 	if metrics[i] >= mins[i]:
+		# 		possibles.append(i)
+		# if len(possibles) == 1:
+		# 	return possibles[0]
+		# print possibles
 		#print metrics
-		#print bestGuess
-		#card.manaImage.show()
-		#raw_input("cmon")
-		return metrics
+		return bestGuess
 
 	def numOfCardsInScreenshot(self, screenshot):
 		count = 8
 		for box in self.cardPresenceTest:
-			#a = imgToBW(screenshot.crop(box), self.cardPresenceThreshold, image=True)
-			#a.show()
-			#raw_input("\\n pls")
 			array = imgToBW(screenshot.crop(box), self.cardPresenceThreshold, image=False).reshape(-1)
 			if 0 not in array:
 				count -= 1
@@ -149,47 +161,6 @@ class screenshotParser:
 		minMana = 0
 		
 		global actualManas
-		manaCount      =      {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}
-		metricsMeanAll = { 0: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   1: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   2: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   3: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   4: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   5: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   6: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   7: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   8: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   9: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  10: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  12: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  20: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}}
-		metricsMaxAll  = { 0: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   1: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   2: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   3: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   4: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   5: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   6: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   7: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   8: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                   9: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  10: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  12: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0},
-		                  20: {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}}
-		metricsMinAll  = { 0: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   1: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   2: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   3: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   4: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   5: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   6: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   7: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   8: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                   9: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                  10: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                  12: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
-		                  20: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500}}
-
 		for name in sorted(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
@@ -201,7 +172,15 @@ class screenshotParser:
 					card.rarity = self.getCardRarity(card)
 					card.cardType = self.getCardType(card)
 					card.quantity = self.getCardQuantity(card)
+					card.mana = self.getCardMana(card, minMana)
 					actualMana = actualManas[count]
+					#if card.mana != actualMana and card.mana != None:
+						#card.cardImage.show()
+						#raw_input(str(card.mana))
+					count += 1
+
+
+					
 					'''res = self.getCardMana(card, minMana)
 
 					for i in range(11) + [12, 20]:
@@ -209,7 +188,6 @@ class screenshotParser:
 						metricsMinAll[actualMana][i] = min(res[i], metricsMinAll[actualMana][i])
 						metricsMaxAll[actualMana][i] = max(res[i], metricsMaxAll[actualMana][i])
 					manaCount[actualMana] += 1
-					count += 1
 
 					#imgToBW(card.manaImage, self.manaThreshold, image=True).save("./temp/" + str(card.mana) + "-" + str(count) + ".bmp", "BMP")
 					
