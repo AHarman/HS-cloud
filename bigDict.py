@@ -1,6 +1,4 @@
-
-# Levels: Hero, type, rarity, cost, [attack, health/durability]
-cardDict = {
+{
 	'Warlock': {
 		'Minion': {
 			'Legendary': {
@@ -104,11 +102,6 @@ cardDict = {
 						4: ['Floating Watcher']
 					}
 				},
-				6: {
-					6: {
-						6: ['Dread Infernal']
-					}
-				},
 				7: {
 					6: {
 						8: ['Fearsome Doomguard']
@@ -125,6 +118,11 @@ cardDict = {
 					4: {
 						3: ['Succubus']
 					}
+				},
+				6: {
+					6: {
+						6: ['Dread Infernal']
+					}
 				}
 			}
 		},
@@ -140,12 +138,13 @@ cardDict = {
 				6: ['Siphon Soul']
 			},
 			'Common': {
-				0: ['Sacrificial Pact'],
-				1: ['Mortal Coil', 'Soulfire', 'Power Overwhelming', 'Corruption'],
+				1: ['Power Overwhelming'],
 				2: ['Demonfire', 'Demonfuse', 'Curse of Rafaam', 'Darkbomb'],
 				3: ['Sense Demons']
 			},
 			'Free': {
+				0: ['Sacrificial Pact'],
+				1: ['Mortal Coil', 'Soulfire', 'Corruption'],
 				3: ['Drain Life', 'Shadow Bolt'],
 				4: ['Hellfire']
 			}
@@ -238,9 +237,6 @@ cardDict = {
 					},
 					3: {
 						3: ['Arathi Weaponsmith']
-					},
-					4: {
-						3: ["Kor'kron Elite"]
 					}
 				},
 				7: {
@@ -253,6 +249,11 @@ cardDict = {
 				3: {
 					2: {
 						3: ['Warsong Commander']
+					}
+				},
+				4: {
+					4: {
+						3: ["Kor'kron Elite"]
 					}
 				}
 			}
@@ -287,17 +288,17 @@ cardDict = {
 					4: {
 						2: ["Death's Bite"]
 					}
-				},
-				5: {
-					5: {
-						2: ['Arcanite Reaper']
-					}
 				}
 			},
 			'Free': {
 				2: {
 					3: {
 						2: ['Fiery War Axe']
+					}
+				},
+				5: {
+					5: {
+						2: ['Arcanite Reaper']
 					}
 				}
 			}
@@ -316,14 +317,13 @@ cardDict = {
 			},
 			'Common': {
 				0: ['Inner Rage'],
-				1: ['Whirlwind'],
-				2: ['Rampage', 'Slam', 'Bolster', 'Battle Rage', 'Cleave'],
-				3: ['Bash', 'Shield Block']
+				2: ['Rampage', 'Slam', 'Bolster', 'Battle Rage'],
+				3: ['Bash']
 			},
 			'Free': {
-				1: ['Execute'],
-				2: ['Heroic Strike'],
-				3: ['Charge']
+				1: ['Execute', 'Whirlwind'],
+				2: ['Heroic Strike', 'Cleave'],
+				3: ['Shield Block', 'Charge']
 			}
 		}
 	},
@@ -391,7 +391,9 @@ cardDict = {
 					3: {
 						4: ['Keeper of Uldaman', 'Murloc Knight']
 					}
-				},
+				}
+			},
+			'Free': {
 				7: {
 					5: {
 						6: ['Guardian of Kings']
@@ -417,17 +419,15 @@ cardDict = {
 					}
 				}
 			},
-			'Common': {
-				4: {
-					4: {
-						2: ['Truesilver Champion']
-					}
-				}
-			},
 			'Free': {
 				1: {
 					1: {
 						4: ["Light's Justice"]
+					}
+				},
+				4: {
+					4: {
+						2: ['Truesilver Champion']
 					}
 				}
 			}
@@ -445,16 +445,15 @@ cardDict = {
 				10: ['Anyfin Can Happen']
 			},
 			'Common': {
-				1: ['Avenge', 'Redemption', 'Humility', 'Eye for an Eye', 'Blessing of Wisdom', 'Noble Sacrifice', 'Repentance', 'Sacred Trial'],
+				1: ['Avenge', 'Redemption', 'Eye for an Eye', 'Blessing of Wisdom', 'Noble Sacrifice', 'Repentance', 'Sacred Trial'],
 				2: ['Seal of Light'],
 				3: ['Seal of Champions'],
-				4: ['Consecration', 'Blessing of Kings'],
 				5: ['Solemn Vigil']
 			},
 			'Free': {
-				1: ['Blessing of Might', 'Hand of Protection'],
+				1: ['Blessing of Might', 'Humility', 'Hand of Protection'],
 				2: ['Holy Light'],
-				4: ['Hammer of Wrath']
+				4: ['Hammer of Wrath', 'Consecration', 'Blessing of Kings']
 			}
 		}
 	},
@@ -538,14 +537,6 @@ cardDict = {
 					2: {
 						4: ['Desert Camel']
 					}
-				},
-				5: {
-					2: {
-						5: ['Tundra Rhino']
-					},
-					3: {
-						2: ['Starving Buzzard']
-					}
 				}
 			},
 			'Free': {
@@ -557,6 +548,14 @@ cardDict = {
 				4: {
 					4: {
 						3: ['Houndmaster']
+					}
+				},
+				5: {
+					2: {
+						5: ['Tundra Rhino']
+					},
+					3: {
+						2: ['Starving Buzzard']
 					}
 				}
 			}
@@ -596,13 +595,14 @@ cardDict = {
 				6: ['Ball of Spiders']
 			},
 			'Common': {
-				0: ["Hunter's Mark"],
 				2: ['Snipe', 'Quick Shot', 'Dart Trap', 'Explosive Trap', 'Bear Trap', 'Freezing Trap'],
-				3: ['Animal Companion', 'Deadly Shot', 'Unleash the Hounds', 'Kill Command'],
+				3: ['Deadly Shot', 'Unleash the Hounds'],
 				5: ['Cobra Shot']
 			},
 			'Free': {
+				0: ["Hunter's Mark"],
 				1: ['Tracking', 'Arcane Shot'],
+				3: ['Animal Companion', 'Kill Command'],
 				4: ['Multi-Shot']
 			}
 		}
@@ -691,7 +691,9 @@ cardDict = {
 					4: {
 						4: ['Druid of the Claw', 'Druid of the Fang']
 					}
-				},
+				}
+			},
+			'Free': {
 				8: {
 					8: {
 						8: ['Ironbark Protector']
@@ -713,18 +715,18 @@ cardDict = {
 				6: ['Recycle']
 			},
 			'Common': {
-				0: ['Moonfire'],
 				1: ['Living Roots', 'Naturalize', 'Raven Idol'],
 				2: ['Power of the Wild', 'Wrath'],
-				3: ['Savage Roar', 'Mark of Nature'],
-				4: ['Soul of the Forest', 'Poison Seeds', 'Swipe'],
-				6: ['Starfire']
+				3: ['Mark of Nature'],
+				4: ['Soul of the Forest', 'Poison Seeds']
 			},
 			'Free': {
-				0: ['Innervate'],
+				0: ['Innervate', 'Moonfire'],
 				1: ['Claw'],
 				2: ['Mark of the Wild', 'Wild Growth'],
-				3: ['Healing Touch']
+				3: ['Savage Roar', 'Healing Touch'],
+				4: ['Swipe'],
+				6: ['Starfire']
 			}
 		}
 	},
@@ -1101,8 +1103,8 @@ cardDict = {
 						4: ['Shieldbearer']
 					},
 					1: {
-						1: ['Young Dragonhawk', 'Elven Archer', 'Grimscale Oracle', 'Argent Squire'],
-						2: ['Undertaker', 'Gadgetzan Jouster', 'Lowly Squire', 'Cogmaster', 'Goldshire Footman']
+						1: ['Young Dragonhawk', 'Argent Squire'],
+						2: ['Undertaker', 'Gadgetzan Jouster', 'Lowly Squire', 'Cogmaster']
 					},
 					2: {
 						1: ['Tournament Attendee', 'Clockwork Gnome', 'Southsea Deckhand', 'Abusive Sergeant', 'Leper Gnome', 'Worgen Infiltrator'],
@@ -1117,29 +1119,28 @@ cardDict = {
 						4: ["Nerub'ar Weblord"]
 					},
 					2: {
-						1: ['Bluegill Warrior', 'Murloc Tidehunter', 'Loot Hoarder', 'Ironbeak Owl'],
-						2: ['Kobold Geomancer', 'Dire Wolf Alpha', 'Mad Scientist', 'Frostwolf Grunt'],
+						1: ['Loot Hoarder', 'Ironbeak Owl'],
+						2: ['Dire Wolf Alpha', 'Mad Scientist'],
 						3: ['Stonesplinter Trogg', 'Mechwarper', 'Flame Juggler', 'Amani Berserker', 'Bloodsail Raider', "Ship's Cannon", 'Gilblin Stalker']
 					},
 					3: {
-						2: ['Mad Bomber', 'Youthful Brewmaster', 'Acidic Swamp Ooze', 'Faerie Dragon', 'Huge Toad', 'Boneguard Lieutenant', 'Puddlestomper']
+						2: ['Mad Bomber', 'Youthful Brewmaster', 'Faerie Dragon', 'Huge Toad', 'Boneguard Lieutenant', 'Puddlestomper']
 					}
 				},
 				3: {
 					1: {
 						3: ['Acolyte of Pain'],
-						4: ['Gnomeregan Infantry', 'Silverback Patriarch', 'Flying Machine', 'Dalaran Mage', 'Stoneskin Gargoyle']
+						4: ['Gnomeregan Infantry', 'Flying Machine', 'Stoneskin Gargoyle']
 					},
 					2: {
 						1: ['Argent Horserider'],
-						2: ['Silent Knight', 'Ironforge Rifleman'],
-						3: ['Razorfen Hunter', 'Thrallmar Farseer', 'Harvest Golem', 'Flesheating Ghoul', 'Tauren Warrior'],
+						2: ['Silent Knight'],
+						3: ['Thrallmar Farseer', 'Harvest Golem', 'Flesheating Ghoul', 'Tauren Warrior'],
 						4: ['Blackwing Technician']
 					},
 					3: {
 						1: ['Scarlet Crusader'],
-						2: ['Shattered Sun Cleric'],
-						3: ['Ironfur Grizzly', 'Raging Worgen', 'Tinkertown Technician', 'Dragonhawk Rider', 'Earthen Ring Farseer', 'Silver Hand Regent'],
+						3: ['Raging Worgen', 'Tinkertown Technician', 'Dragonhawk Rider', 'Earthen Ring Farseer', 'Silver Hand Regent'],
 						4: ['Spider Tank']
 					},
 					4: {
@@ -1156,8 +1157,6 @@ cardDict = {
 						8: ['Tournament Medic']
 					},
 					2: {
-						4: ['Dragonling Mechanic', 'Gnomish Inventor'],
-						5: ['Stormwind Knight'],
 						6: ['Maiden of the Lake', 'Frigid Snobold']
 					},
 					3: {
@@ -1168,8 +1167,8 @@ cardDict = {
 					4: {
 						2: ['Cult Master'],
 						3: ['Piloted Shredder', 'Spellbreaker'],
-						4: ['Dark Iron Dwarf', 'Ogre Magi'],
-						5: ['Chillwind Yeti', 'Mechanical Yeti']
+						4: ['Dark Iron Dwarf'],
+						5: ['Mechanical Yeti']
 					},
 					5: {
 						4: ['Ancient Brewmaster', 'Lost Tallstrider', 'Evil Heckler'],
@@ -1177,22 +1176,17 @@ cardDict = {
 					}
 				},
 				5: {
-					2: {
-						7: ['Gurubashi Berserker']
-					},
 					3: {
 						3: ['Antique Healbot'],
 						6: ['Fen Creeper']
 					},
 					4: {
-						2: ['Stormpike Commando'],
 						3: ["Mukla's Champion"],
-						4: ['Anubisath Sentinel', 'Kvaldir Raider', 'Silver Hand Knight', 'Frostwolf Warlord'],
-						5: ['Darkscale Healer'],
+						4: ['Anubisath Sentinel', 'Kvaldir Raider', 'Silver Hand Knight'],
 						6: ['Spiteful Smith', 'Spectral Knight']
 					},
 					5: {
-						4: ['Blackwing Corruptor', 'Booty Bay Bodyguard'],
+						4: ['Blackwing Corruptor'],
 						5: ['Clockwork Knight', 'Stranglethorn Tiger'],
 						6: ['Pit Fighter']
 					},
@@ -1203,8 +1197,7 @@ cardDict = {
 				},
 				6: {
 					4: {
-						5: ['Windfury Harpy'],
-						7: ['Archmage']
+						5: ['Windfury Harpy']
 					},
 					5: {
 						4: ['Priestess of Elune'],
@@ -1212,22 +1205,12 @@ cardDict = {
 					},
 					6: {
 						4: ['Volcanic Drake'],
-						5: ['Lord of the Arena'],
 						6: ['Drakonid Crusher']
 					}
 				},
 				7: {
 					5: {
 						9: ['Captured Jormungar']
-					},
-					6: {
-						6: ['Stormwind Champion']
-					},
-					7: {
-						7: ['War Golem']
-					},
-					9: {
-						5: ['Core Hound']
 					}
 				},
 				8: {
@@ -1247,7 +1230,8 @@ cardDict = {
 			'Free': {
 				1: {
 					1: {
-						1: ['Stonetusk Boar']
+						1: ['Elven Archer', 'Grimscale Oracle', 'Stonetusk Boar'],
+						2: ['Goldshire Footman']
 					},
 					2: {
 						1: ['Voodoo Doctor', 'Murloc Raider']
@@ -1258,18 +1242,26 @@ cardDict = {
 						1: ['Novice Engineer']
 					},
 					2: {
+						1: ['Bluegill Warrior', 'Murloc Tidehunter'],
+						2: ['Kobold Geomancer', 'Frostwolf Grunt'],
 						3: ['River Crocolisk']
 					},
 					3: {
-						2: ['Bloodfen Raptor']
+						2: ['Acidic Swamp Ooze', 'Bloodfen Raptor']
 					}
 				},
 				3: {
+					1: {
+						4: ['Silverback Patriarch', 'Dalaran Mage']
+					},
 					2: {
-						2: ['Raid Leader']
+						2: ['Ironforge Rifleman', 'Raid Leader'],
+						3: ['Razorfen Hunter']
 					},
 					3: {
-						1: ['Wolfrider']
+						1: ['Wolfrider'],
+						2: ['Shattered Sun Cleric'],
+						3: ['Ironfur Grizzly']
 					},
 					5: {
 						1: ['Magma Rager']
@@ -1277,23 +1269,52 @@ cardDict = {
 				},
 				4: {
 					2: {
+						4: ['Dragonling Mechanic', 'Gnomish Inventor'],
+						5: ['Stormwind Knight'],
 						7: ['Oasis Snapjaw']
 					},
 					3: {
 						5: ["Sen'jin Shieldmasta"]
+					},
+					4: {
+						4: ['Ogre Magi'],
+						5: ['Chillwind Yeti']
 					}
 				},
 				5: {
+					2: {
+						7: ['Gurubashi Berserker']
+					},
 					4: {
-						4: ['Nightblade']
+						2: ['Stormpike Commando'],
+						4: ['Nightblade', 'Frostwolf Warlord'],
+						5: ['Darkscale Healer']
+					},
+					5: {
+						4: ['Booty Bay Bodyguard']
 					}
 				},
 				6: {
+					4: {
+						7: ['Archmage']
+					},
 					5: {
 						2: ['Reckless Rocketeer']
 					},
 					6: {
+						5: ['Lord of the Arena'],
 						7: ['Boulderfist Ogre']
+					}
+				},
+				7: {
+					6: {
+						6: ['Stormwind Champion']
+					},
+					7: {
+						7: ['War Golem']
+					},
+					9: {
+						5: ['Core Hound']
 					}
 				}
 			}
@@ -1412,7 +1433,7 @@ cardDict = {
 					}
 				}
 			},
-			'Common': {
+			'Free': {
 				5: {
 					3: {
 						4: ["Assassin's Blade"]
@@ -1433,17 +1454,17 @@ cardDict = {
 			'Common': {
 				0: ['Shadowstep'],
 				1: ['Conceal', 'Cold Blood'],
-				2: ['Shiv', 'Betrayal', 'Eviscerate', 'Gang Up'],
-				3: ['Fan of Knives'],
-				4: ["Tinker's Sharpsword Oil"],
-				6: ['Vanish'],
-				7: ['Sprint']
+				2: ['Betrayal', 'Eviscerate', 'Gang Up'],
+				4: ["Tinker's Sharpsword Oil"]
 			},
 			'Free': {
 				0: ['Backstab'],
 				1: ['Sinister Strike', 'Deadly Poison'],
-				2: ['Sap'],
-				5: ['Assassinate']
+				2: ['Shiv', 'Sap'],
+				3: ['Fan of Knives'],
+				5: ['Assassinate'],
+				6: ['Vanish'],
+				7: ['Sprint']
 			}
 		}
 	},
@@ -1526,13 +1547,19 @@ cardDict = {
 				},
 				4: {
 					3: {
-						5: ['Dalaran Aspirant'],
-						6: ['Water Elemental']
+						5: ['Dalaran Aspirant']
 					}
 				},
 				5: {
 					6: {
 						3: ['Ethereal Conjurer']
+					}
+				}
+			},
+			'Free': {
+				4: {
+					3: {
+						6: ['Water Elemental']
 					}
 				}
 			}
@@ -1550,18 +1577,18 @@ cardDict = {
 				6: ['Blizzard']
 			},
 			'Common': {
-				1: ['Ice Lance', 'Mirror Image'],
-				2: ['Frostbolt', 'Flamecannon'],
-				3: ['Duplicate', 'Forgotten Torch', 'Frost Nova', 'Ice Barrier', 'Mirror Entity'],
+				1: ['Ice Lance'],
+				2: ['Flamecannon'],
+				3: ['Duplicate', 'Forgotten Torch', 'Ice Barrier', 'Mirror Entity'],
 				4: ['Cone of Cold'],
-				5: ["Dragon's Breath", 'Flame Lance'],
-				7: ['Flamestrike']
+				5: ["Dragon's Breath", 'Flame Lance']
 			},
 			'Free': {
-				1: ['Arcane Missiles'],
-				2: ['Arcane Explosion'],
-				3: ['Arcane Intellect'],
-				4: ['Fireball', 'Polymorph']
+				1: ['Arcane Missiles', 'Mirror Image'],
+				2: ['Frostbolt', 'Arcane Explosion'],
+				3: ['Frost Nova', 'Arcane Intellect'],
+				4: ['Fireball', 'Polymorph'],
+				7: ['Flamestrike']
 			}
 		}
 	},
@@ -1631,9 +1658,6 @@ cardDict = {
 					}
 				},
 				2: {
-					0: {
-						3: ['Flametongue Totem']
-					},
 					3: {
 						2: ['Whirling Zap-o-matic'],
 						4: ['Totem Golem']
@@ -1652,8 +1676,19 @@ cardDict = {
 						6: ['Rumbling Elemental']
 					},
 					3: {
-						3: ['Windspeaker'],
 						6: ['Fireguard Destroyer']
+					}
+				}
+			},
+			'Free': {
+				2: {
+					0: {
+						3: ['Flametongue Totem']
+					}
+				},
+				4: {
+					3: {
+						3: ['Windspeaker']
 					}
 				},
 				6: {
@@ -1702,16 +1737,15 @@ cardDict = {
 				7: ['Everyfin is Awesome']
 			},
 			'Common': {
-				0: ['Totemic Might'],
 				1: ['Lightning Bolt', 'Forked Lightning', 'Earth Shock'],
-				2: ['Ancestral Knowledge', 'Reincarnate', 'Crackle'],
-				5: ['Bloodlust']
+				2: ['Ancestral Knowledge', 'Reincarnate', 'Crackle']
 			},
 			'Free': {
-				0: ['Ancestral Healing'],
+				0: ['Totemic Might', 'Ancestral Healing'],
 				1: ['Rockbiter Weapon', 'Frost Shock'],
 				2: ['Windfury'],
-				3: ['Hex']
+				3: ['Hex'],
+				5: ['Bloodlust']
 			}
 		}
 	},
@@ -1832,16 +1866,16 @@ cardDict = {
 			},
 			'Common': {
 				0: ['Silence', 'Circle of Healing'],
-				1: ['Power Word: Glory', 'Flash Heal', 'Mind Vision', 'Inner Fire'],
-				2: ['Divine Spirit'],
-				3: ["Velen's Chosen", 'Shadow Word: Death', 'Thoughtsteal'],
-				5: ['Holy Nova'],
-				6: ['Entomb'],
-				10: ['Mind Control']
+				1: ['Power Word: Glory', 'Flash Heal', 'Inner Fire'],
+				3: ["Velen's Chosen", 'Thoughtsteal'],
+				6: ['Entomb']
 			},
 			'Free': {
-				1: ['Power Word: Shield', 'Holy Smite'],
-				2: ['Shadow Word: Pain', 'Mind Blast']
+				1: ['Mind Vision', 'Power Word: Shield', 'Holy Smite'],
+				2: ['Shadow Word: Pain', 'Mind Blast', 'Divine Spirit'],
+				3: ['Shadow Word: Death'],
+				5: ['Holy Nova'],
+				10: ['Mind Control']
 			}
 		}
 	}

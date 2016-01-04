@@ -60,8 +60,14 @@ for card in cardsJSON:
 	else:
 		playerClass = str(card["playerClass"])
 	cardType = str(card["type"])
-	rarity = str(card["rarity"])
+	
+	if card["set"] == "CORE":
+		rarity = "Free"
+	else:
+		rarity = str(card["rarity"])
+	
 	cost = int(card["cost"])
+
 	if card["type"] == "Spell":
 		cards[playerClass][cardType][rarity][cost].append(str(card["name"]))
 	elif card["type"] == "Minion":
