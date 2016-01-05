@@ -42,6 +42,9 @@ class ScreenshotParser:
 	rarityLocation   =  {"Spell" : (113, 203, 122, 215),
 	                     "Minion": (120, 197, 129, 209), 
 	                     "Weapon": (118, 198, 127, 210)}
+	gRarityLocation  =  {"Spell" : (115, 202, 124, 214),
+	                     "Minion": (114, 201, 123, 213), 
+	                     "Weapon": (120, 197, 129, 209)}
 	heroLocation     =  {"Druid"  :(256,   0, 312,  20),
 	                     "Hunter" :(326,   0, 382,  20),
 	                     "Mage"   :(396,   0, 452,  20),
@@ -71,8 +74,10 @@ class ScreenshotParser:
 	                         "Weapon": 50,
 	                         "Spell":  70}
 
+	possibleManas = {}
+
 	def __init__(self):
-		self.manaArrays = self.loadManaArrays("./compImages2/")
+		self.manaArrays = self.loadManaArrays("./compImages/")
 
 	def loadManaArrays(self, pathToImages):
 		arrays = {}
@@ -117,8 +122,27 @@ class ScreenshotParser:
 	def getCardRarity(self, card):
 		if self.isLegendary(card):
 			return "Legendary"
-		return None
+		
+		if card.golden:
+			rarityImage = card.cardImage.crop(self.gRarityLocation[card.cardType])
+		else:
+			rarityImage = card.cardImage.crop(self.rarityLocation[card.cardType])
 
+		colours = [0, 0, 0]
+		hist = rarityImage.histogram()
+		for j in range(256):
+			colours[0] += hist[j] * j
+			colours[1] += hist[j + 256] * j
+			colours[2] += hist[j + 512] * j
+
+		if colours[2] > 2.5 * colours[0]:
+			return "Rare"
+		if colours[1] * 2 < colours[0]:
+			return "Epic"
+		if ((colours[0] > colours[1] and colours[1] > colours[2]) or 
+			(abs(colours[0] - colours[1]) < 1000 and abs(colours[0] - colours[2]) < 1000)):
+			return "Free"
+		return "Common"
 
 	# TODO: Make sure this works for mana of 10, 12 and 20 (I don't have those cards in the test data)
 	# Could optimise this as you know that, say, you're not going to go from 1 mana to 5 because of basic cards
@@ -147,27 +171,6 @@ class ScreenshotParser:
 				bestGuess = currentMana
 		if getMetrics:
 			return metrics
-		# if metrics[20] > 200:
-		# 	return 20
-		# if metrics[12] > 200:
-		# 	return 12
-		# if metrics[10] > 200:
-		# 	return 10
-		# if metrics[ 9] > 210:
-		# 	return 9
-		# if metrics[ ]
-		# if metrics[ 7] > 190:
-		# 	return 7
-
-		# mins = [160, 135, 90, 85, 95, 95, 55, 195, 165, 155]
-		# possibles = []
-		# for i in [0, 1, 2, 3, 4, 5, 6, 8, 9]:
-		# 	if metrics[i] >= mins[i]:
-		# 		possibles.append(i)
-		# if len(possibles) == 1:
-		# 	return possibles[0]
-		# print possibles
-		#print metrics
 		return bestGuess
 
 	def getClassFromScreenshot(self, screenshot):
@@ -187,10 +190,9 @@ class ScreenshotParser:
 	def getCardsFromImages(self, pathToImages):
 		cards = []
 		count = 0
-		count2 = 0
 		minMana = 0
 		
-		global actualManas
+		global rarities
 		for name in sorted(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
@@ -205,6 +207,11 @@ class ScreenshotParser:
 					card.quantity = self.getCardQuantity(card)
 					card.hero = currentHero
 					card.mana = self.getCardMana(card, minMana)
+					if card.rarity != rarities[count]:
+						card.cardImage.show()
+						raw_input(str(card.rarity))
+					count += 1
+					print count
 		return cards
 
 
@@ -212,66 +219,93 @@ if __name__ == "__main__":
 	p = ScreenshotParser()
 	cards = p.getCardsFromImages("./screencaps/")
 
-'''maxs = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768, "Legendary": [0]*768}
-mins = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768, "Legendary": [0]*768}
-avgs = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768, "Legendary": [0]*768}
-
-for i in range(len(rarities)):
-	if i not in goldenMinions:
+	'''maxs = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768}
+	mins = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768}
+	avgs = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768}
+	test = {"Free": [0, 0, 0],  "Common": [0, 0, 0],  "Rare": [0, 0, 0],  "Epic": [0, 0, 0]}
+	for i in range(len(cards)):
+		print i
 		card = cards[i]
 		rarity = rarities[i]
-		if i < len(actualTypes):
-			cardType = actualTypes[i]
-		else:
-			cardType = "Minion"
-		
-		rarityImage = card.cardImage.crop(card.rarityLocation[cardType])
-		hist = rarityImage.histogram()
+		if rarity != "Legendary":
+			if i < len(actualTypes):
+				cardType = actualTypes[i]
+			else:
+				cardType = "Minion"
+	
+			
+
+	for i in range(3):
+		test["Free"][i]   = float(float(test["Free"  ][i]) / float(frees))
+		test["Common"][i] = float(float(test["Common"][i]) / float(commons))
+		test["Rare"][i]   = float(float(test["Rare"  ][i]) / float(rares))
+		test["Epic"][i]   = float(float(test["Epic"  ][i]) / float(epics))
+
+	reds   = {"Free":   float(test["Free"  ][0]),
+	          "Common": float(test["Common"][0]),
+	          "Rare":   float(test["Rare"  ][0]),
+	          "Epic":   float(test["Epic"  ][0])}
+
+
+	for i in range(3):
+		test["Free"][i]   = float(float(test["Free"  ][i]) / float(reds["Free"  ]))
+		test["Common"][i] = float(float(test["Common"][i]) / float(reds["Common"]))
+		test["Rare"][i]   = float(float(test["Rare"  ][i]) / float(reds["Rare"  ]))
+		test["Epic"][i]   = float(float(test["Epic"  ][i]) / float(reds["Epic"  ]))
+
+	print test["Free"]
+	print test["Common"]
+	print test["Rare"]
+	print test["Epic"]
+
+	''
 		for j in range(768):
 			maxs[rarity][j] = max(maxs[rarity][j], hist[j])
 			mins[rarity][j] = min(mins[rarity][j], hist[j])
 			avgs[rarity][j] += hist[j]
-		card.cardImage.crop(card.rarityLocation[cardType]).save("temp/" + str(i) + "-" + cardType + ".bmp", "BMP")
-		card.cardImage.save("temp/" + str(i) + ".bmp", "BMP")
 
-for i in range(768):
- 	avgs["Free"  ][i] = float(avgs[rarity][i]) / float(frees)
- 	avgs["Common"][i] = float(avgs[rarity][i]) / float(commons)
- 	avgs["Rare"  ][i] = float(avgs[rarity][i]) / float(rares)
- 	avgs["Epic"  ][i] = float(avgs[rarity][i]) / float(epics)
+		#rarityImage.save("temp/" + str(rarity) + " " + str(i) + "-" + cardType + ".bmp", "BMP")
+		#card.cardImage.save("temp/" + str(rarity) + " " + str(i) + ".bmp", "BMP")
 
-print frees
-print commons
-print rares
-print epics
 
-print "R:"
-print "Free: "   + str(int(sum(avgs["Free"  ][:256][:-128])))
-print "Common: " + str(int(sum(avgs["Common"][:256][:-128])))
-print "Rare: "   + str(int(sum(avgs["Rare"  ][:256][:-128])))
-print "Epic: "   + str(int(sum(avgs["Epic"  ][:256][:-128])))
+	for i in range(768):
+		avgs["Free"  ][i] = float(avgs["Free"  ][i]) / float(frees)
+		avgs["Common"][i] = float(avgs["Common"][i]) / float(commons)
+		avgs["Rare"  ][i] = float(avgs["Rare"  ][i]) / float(rares)
+		avgs["Epic"  ][i] = float(avgs["Epic"  ][i]) / float(epics)
 
-print "\nG:"
-print "Free: "   + str(int(sum(avgs["Free"  ][256:-256][:-128])))
-print "Common: " + str(int(sum(avgs["Common"][256:-256][:-128])))
-print "Rare: "   + str(int(sum(avgs["Rare"  ][256:-256][:-128])))
-print "Epic: "   + str(int(sum(avgs["Epic"  ][256:-256][:-128])))
+	print frees
+	print commons
+	print rares
+	print epics
 
-print "\nB:"
-print "Free: "   + str(int(sum(avgs["Free"  ][:-128])))
-print "Common: " + str(int(sum(avgs["Common"][:-128])))
-print "Rare: "   + str(int(sum(avgs["Rare"  ][:-128])))
-print "Epic: "   + str(int(sum(avgs["Epic"  ][:-128])))
+	print "R:"
+	print "Free: "   + str(int(sum(avgs["Free"  ][:256][:-128])))
+	print "Common: " + str(int(sum(avgs["Common"][:256][:-128])))
+	print "Rare: "   + str(int(sum(avgs["Rare"  ][:256][:-128])))
+	print "Epic: "   + str(int(sum(avgs["Epic"  ][:256][:-128])))
 
-print "Free"
-plt.plot(avgs["Free"])
-plt.show()
-print "Common"
-plt.plot(avgs["Common"])
-plt.show()
-print "Rare"
-plt.plot(avgs["Rare"])
-plt.show()
-print "Epic"
-plt.plot(avgs["Epic"])
-plt.show()'''
+	print "\nG:"
+	print "Free: "   + str(int(sum(avgs["Free"  ][256:-256][:-128])))
+	print "Common: " + str(int(sum(avgs["Common"][256:-256][:-128])))
+	print "Rare: "   + str(int(sum(avgs["Rare"  ][256:-256][:-128])))
+	print "Epic: "   + str(int(sum(avgs["Epic"  ][256:-256][:-128])))
+
+	print "\nB:"
+	print "Free: "   + str(int(sum(avgs["Free"  ][:-128])))
+	print "Common: " + str(int(sum(avgs["Common"][:-128])))
+	print "Rare: "   + str(int(sum(avgs["Rare"  ][:-128])))
+	print "Epic: "   + str(int(sum(avgs["Epic"  ][:-128])))
+
+	print "Free"
+	plt.plot(avgs["Free"])
+	plt.show()
+	print "Common"
+	plt.plot(avgs["Common"])
+	plt.show()
+	print "Rare"
+	plt.plot(avgs["Rare"])
+	plt.show()
+	print "Epic"
+	plt.plot(avgs["Epic"])
+	plt.show()'''
