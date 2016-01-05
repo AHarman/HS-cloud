@@ -69,7 +69,7 @@ class ScreenshotParser:
 	legendaryThreshold    = 100
 	weaponThreshold       = 100
 	minionThreshold       = 100
-	heroThreshold        = 100
+	heroThreshold         = 100
 	goldenThresholds      = {"Minion": 50,
 	                         "Weapon": 50,
 	                         "Spell":  70}
@@ -155,7 +155,12 @@ class ScreenshotParser:
 		bestGuess = None
 		bestMetric = 0
 		metrics = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}
-		for currentMana in range(11) + [12, 20]:
+		if lowerLimit < 12:
+			possibleManas = range(lowerLimit, 11) + [12, 20]
+		else:
+			possibleManas = [12, 20]
+
+		for currentMana in possibleManas:
 			currentMetric = 0
 			currentManaRef = self.manaArrays[currentMana]
 
@@ -173,9 +178,10 @@ class ScreenshotParser:
 			return metrics
 		return bestGuess
 
-	def getClassFromScreenshot(self, screenshot):
+	def getClassFromScreenshot(self, screenshot, heroCounter):
 		heroes = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Neutral"]
-		for hero in heroes:
+		print str(heroCounter) + " " + str(heroes[heroCounter:])
+		for hero in (heroes[heroCounter:]):
 			if 0xFF in imgToBW(screenshot.crop(self.heroLocation[hero]), self.heroThreshold):
 				return hero
 
@@ -206,12 +212,19 @@ class ScreenshotParser:
 		cards = []
 		count = 0
 		minMana = 0
+		heroCounter = 0
+		oldHero = "Druid"
 		
 		global rarities
 		for name in self.reorderImages(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
-				currentHero = self.getClassFromScreenshot(screenshot)
+
+				currentHero = self.getClassFromScreenshot(screenshot, heroCounter)
+				if oldHero != currentHero:
+					minMana = 0
+					heroCounter += 1
+					oldHero = currentHero
 
 				for i in range(self.numOfCardsInScreenshot(screenshot)):
 					card = Card(screenshot.crop(self.cardLocations[i]))
@@ -221,11 +234,8 @@ class ScreenshotParser:
 					card.rarity = self.getCardRarity(card)
 					card.quantity = self.getCardQuantity(card)
 					card.hero = currentHero
-					#card.mana = self.getCardMana(card, minMana)
-					if card.rarity != rarities[count]:
-						card.cardImage.show()
-						print "card " + str(count) + " is " + str(card.rarity) + " should be " + rarities[count]
-						raw_input()
+					minMana = self.getCardMana(card, lowerLimit=minMana)
+					card.mana = minMana
 					count += 1
 					print count
 		return cards
