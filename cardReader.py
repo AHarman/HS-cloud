@@ -8,25 +8,19 @@ from   utils import *
 np.set_printoptions(linewidth=150)
 
 class Card:
-	#quantityLocation  = ( 75, 238,  99, 254)
-	# TODO: Golden minions need their own
-
 	#cardNameLocation  = ( 14, 104, 145, 126)    # TODO: This only works for spells, not minions (different text warp)
-	#minionTest        = (0, 0, 0, 0)    # TODO: Do this
 	#weaponTest        = (0, 0, 0, 0)    # TODO: Do this
 	#quantityThreshold = 125
 
 	def __init__(self, image):
-		self.cardImage     = image
-		#self.nameImage     = self.cardImage.crop(self.cardNameLocation)
-		#self.quantityImage = self.cardImage.crop(self.quantityLocation)
-		#self.rarityImage   = self.cardImage.crop(self.rarityLocation)
+		self.cardImage = image
 
 		self.name = None
 		self.hero = None
 		self.rarity = None
 		self.cardType = None
 		self.mana = None
+		self.golden = None
 
 	def show(self):
 		return self.cardImage.show()
@@ -38,7 +32,6 @@ class screenshotParser:
 	                    ( 286,  544,  518,  913),  ( 527,  544,  755,  913),  ( 768,  544, 1000,  913),  (1009,  544, 1241,  913)]
 	cardPresenceTest = [( 500,  422,  516,  436),  ( 743,  422,  759,  436),  ( 981,  422,  997,  436),  (1222,  422, 1238,  436),
 	                    ( 500,  801,  516,  815),  ( 743,  801,  759,  815),  ( 981,  801,  997,  815),  (1222,  801, 1238,  815)]
-	classLocation    =  ( 676,  111,  848,  137)
 	quantityTest     =  (  74,  346,  174,  356)
 	legendaryTest    =  ( 192,   13,  215,   23)
 	weaponTest       =  (  61,    6,   72,   21)
@@ -49,10 +42,19 @@ class screenshotParser:
 	rarityLocation   =  {"Spell" : (113, 203, 122, 215),
 	                     "Minion": (120, 197, 129, 209), 
 	                     "Weapon": (118, 198, 127, 210)}
+	heroLocation     =  {"Druid"  :(256,   0, 312,  20),
+	                     "Hunter" :(326,   0, 382,  20),
+	                     "Mage"   :(396,   0, 452,  20),
+	                     "Paladin":(466,   0, 522,  20),
+	                     "Priest" :(536,   0, 592,  20),
+	                     "Rogue"  :(606,   0, 662,  20),
+	                     "Shaman" :(676,   0, 732,  20),
+	                     "Warlock":(746,   0, 802,  20),
+	                     "Warrior":(816,   0, 872,  20),
+	                     "Neutral":(886,   0, 942,  20)}
 	
 	manaLocation     = ( 18,  22,  48,  62)
 
-	classThreshold        = 125
 	quantityThreshold     = 125
 	cardPresenceThreshold = 100
 	manaThreshold         = 245
@@ -60,6 +62,7 @@ class screenshotParser:
 	legendaryThreshold    = 100
 	weaponThreshold       = 100
 	minionThreshold       = 100
+	heroThreshold        = 100
 	goldenThresholds      = {"Minion": 50,
 	                         "Weapon": 50,
 	                         "Spell":  70}
@@ -76,7 +79,6 @@ class screenshotParser:
 	def isGolden(self, card):
 		if 0 in imgToBW(card.cardImage.crop(self.goldenTest[card.cardType]), self.goldenThresholds[card.cardType]):
 			return False
-
 		return True
 
 
@@ -160,6 +162,13 @@ class screenshotParser:
 		#print metrics
 		return bestGuess
 
+	def getClassFromScreenshot(self, screenshot):
+		heroes = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Neutral"]
+		for hero in heroes:
+			if 0xFF in imgToBW(screenshot.crop(self.heroLocation[hero]), self.heroThreshold):
+				print hero
+				return hero
+
 	def numOfCardsInScreenshot(self, screenshot):
 		count = 8
 		for box in self.cardPresenceTest:
@@ -177,45 +186,19 @@ class screenshotParser:
 		for name in sorted(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
-				#currentClass = self.getClassFromScreenshot(screenshot)
+				currentClass = self.getClassFromScreenshot(screenshot)
 
 				for i in range(self.numOfCardsInScreenshot(screenshot)):
 					card = Card(screenshot.crop(self.cardLocations[i]))
 					cards.append(card)
-					#card.rarity = self.getCardRarity(card)
 					card.cardType = self.getCardType(card)
-					#card.quantity = self.getCardQuantity(card)
-					self.isGolden(card)
-					#card.mana = self.getCardMana(card, minMana)
+					card.golden = self.isGolden(card)
+					card.rarity = self.getCardRarity(card)
+					card.quantity = self.getCardQuantity(card)
+					card.mana = self.getCardMana(card, minMana)
 					actualMana = actualManas[count]
-					#if card.mana != actualMana and card.mana != None:
-						#card.cardImage.show()
-						#raw_input(str(card.mana))
+
 					count += 1
-
-
-					
-					'''res = self.getCardMana(card, minMana)
-
-					for i in range(11) + [12, 20]:
-						metricsMeanAll[actualMana][i] += res[i]
-						metricsMinAll[actualMana][i] = min(res[i], metricsMinAll[actualMana][i])
-						metricsMaxAll[actualMana][i] = max(res[i], metricsMaxAll[actualMana][i])
-					manaCount[actualMana] += 1
-
-					#imgToBW(card.manaImage, self.manaThreshold, image=True).save("./temp/" + str(card.mana) + "-" + str(count) + ".bmp", "BMP")
-					
-
-		for i in range(11) + [12, 20]:
-			for j in range(11) + [12, 20]:
-				if manaCount[i] != 0:
-					metricsMeanAll[i][j] /= manaCount[i]
-		print "ALL THE THINGS"
-		for i in range(11) + [20]:
-			print str(i) + ":"
-			print "    Mean: " + str(metricsMeanAll[i])
-			print "    Max:  " + str(metricsMaxAll[i])
-			print "    Min:  " + str(metricsMinAll[i])'''
 		return cards
 
 
