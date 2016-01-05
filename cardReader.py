@@ -187,13 +187,28 @@ class ScreenshotParser:
 				count -= 1
 		return count
 
+	# If you take two screenshots in the same second, they'll appear out of order when you sort them
+	def reorderImages(self, imageNames):
+		imageNames.sort()
+		i = 0
+		sortedImageNames = []
+		while i < len(imageNames):
+			image = imageNames[i]
+			if image[-4:] == ".png":
+				if image[-6:-5] == " ":
+					sortedImageNames.append(imageNames[i+1])
+					i += 1
+				sortedImageNames.append(image)
+			i += 1
+		return sortedImageNames
+
 	def getCardsFromImages(self, pathToImages):
 		cards = []
 		count = 0
 		minMana = 0
 		
 		global rarities
-		for name in sorted(os.listdir(pathToImages)):
+		for name in self.reorderImages(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
 				currentHero = self.getClassFromScreenshot(screenshot)
@@ -206,10 +221,11 @@ class ScreenshotParser:
 					card.rarity = self.getCardRarity(card)
 					card.quantity = self.getCardQuantity(card)
 					card.hero = currentHero
-					card.mana = self.getCardMana(card, minMana)
+					#card.mana = self.getCardMana(card, minMana)
 					if card.rarity != rarities[count]:
 						card.cardImage.show()
-						raw_input(str(card.rarity))
+						print "card " + str(count) + " is " + str(card.rarity) + " should be " + rarities[count]
+						raw_input()
 					count += 1
 					print count
 		return cards
