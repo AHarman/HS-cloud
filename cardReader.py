@@ -26,7 +26,7 @@ class Card:
 		return self.cardImage.show()
 	
 
-class screenshotParser:
+class ScreenshotParser:
 	# Create dictionaries with resolutions as key to extend this
 	cardLocations    = [( 286,  165,  518,  534),  ( 527,  165,  755,  534),  ( 768,  165, 1000,  534),  (1009,  165, 1241,  534),
 	                    ( 286,  544,  518,  913),  ( 527,  544,  755,  913),  ( 768,  544, 1000,  913),  (1009,  544, 1241,  913)]
@@ -54,6 +54,10 @@ class screenshotParser:
 	                     "Neutral":(886,   0, 942,  20)}
 	
 	manaLocation     = ( 18,  22,  48,  62)
+	gManaLocation    = {"Minion": (14,  23,  44,  63),
+	                    "Spell" : (18,  22,  48,  62),
+	                    "Weapon": (18,  22,  48,  62)}
+
 
 	quantityThreshold     = 125
 	cardPresenceThreshold = 100
@@ -68,7 +72,7 @@ class screenshotParser:
 	                         "Spell":  70}
 
 	def __init__(self):
-		self.manaArrays = self.loadManaArrays("./compImages/")
+		self.manaArrays = self.loadManaArrays("./compImages2/")
 
 	def loadManaArrays(self, pathToImages):
 		arrays = {}
@@ -118,8 +122,11 @@ class screenshotParser:
 
 	# TODO: Make sure this works for mana of 10, 12 and 20 (I don't have those cards in the test data)
 	# Could optimise this as you know that, say, you're not going to go from 1 mana to 5 because of basic cards
-	def getCardMana(self, card, lowerLimit=0):
-		manaImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
+	def getCardMana(self, card, lowerLimit=0, getMetrics=False):
+		if card.golden:
+			manaImage = imgToBW(card.cardImage.crop(self.gManaLocation[card.cardType]), self.manaThreshold).reshape(-1)
+		else:
+			manaImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
 
 		bestGuess = None
 		bestMetric = 0
@@ -138,7 +145,8 @@ class screenshotParser:
 			if metrics[currentMana] > bestMetric:
 				bestMetric = metrics[currentMana]
 				bestGuess = currentMana
-
+		if getMetrics:
+			return metrics
 		# if metrics[20] > 200:
 		# 	return 20
 		# if metrics[12] > 200:
@@ -166,7 +174,6 @@ class screenshotParser:
 		heroes = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Neutral"]
 		for hero in heroes:
 			if 0xFF in imgToBW(screenshot.crop(self.heroLocation[hero]), self.heroThreshold):
-				print hero
 				return hero
 
 	def numOfCardsInScreenshot(self, screenshot):
@@ -180,13 +187,14 @@ class screenshotParser:
 	def getCardsFromImages(self, pathToImages):
 		cards = []
 		count = 0
+		count2 = 0
 		minMana = 0
 		
 		global actualManas
 		for name in sorted(os.listdir(pathToImages)):
 			if name[-4:] == ".png":
 				screenshot = Image.open(pathToImages + name)
-				currentClass = self.getClassFromScreenshot(screenshot)
+				currentHero = self.getClassFromScreenshot(screenshot)
 
 				for i in range(self.numOfCardsInScreenshot(screenshot)):
 					card = Card(screenshot.crop(self.cardLocations[i]))
@@ -195,15 +203,14 @@ class screenshotParser:
 					card.golden = self.isGolden(card)
 					card.rarity = self.getCardRarity(card)
 					card.quantity = self.getCardQuantity(card)
+					card.hero = currentHero
 					card.mana = self.getCardMana(card, minMana)
-					actualMana = actualManas[count]
-
-					count += 1
 		return cards
 
 
-p = screenshotParser()
-cards = p.getCardsFromImages("./screencaps/")
+if __name__ == "__main__":
+	p = ScreenshotParser()
+	cards = p.getCardsFromImages("./screencaps/")
 
 '''maxs = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768, "Legendary": [0]*768}
 mins = {"Free": [0]*768, "Common": [0]*768, "Rare": [0]*768, "Epic": [0]*768, "Legendary": [0]*768}

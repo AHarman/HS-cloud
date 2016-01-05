@@ -4,6 +4,7 @@ import numpy as np
 import math
 import json
 from   utils import *
+from cardReader import Card, ScreenshotParser
 
 # def createCumulativeManaImages():
 # 	with open("cards.collectible.json", "r") as f:
@@ -28,112 +29,46 @@ from   utils import *
 # 	cumManaImages = normaliseManaImages(cumManaImages)
 # 	for i in range(11) + [12, 20]:
 # 		Image.fromarray(cumManaImages[i]).save("./compImages/mana-" + str(i) + ".bmp", "BMP")
-def createCumulativeManaImages(cards):
-	global actualManas
-	cumManaImages = {}
-	manaThreshold = 245
-	for i in range(11) + [12, 20]:
-		cumManaImages[i] = np.zeros((40, 30), dtype=np.uint8)
-
-	for i in range(len(cards)):
-		card = cards[i]
-		mana = actualManas[i]
-		
-		manaImage = imgToBW(card.manaImage, manaThreshold)
-		cumManaImage = cumManaImages[mana]
-		for row in range(len(manaImage)):
-			for col in range(len(manaImage[row])):
-				if manaImage[row, col] == 0xFF:
-					cumManaImage[row, col] += 1
-
-	cumManaImages = normaliseManaImages(cumManaImages)
-	for i in range(11) + [12, 20]:
-		Image.fromarray(cumManaImages[i]).save("./compImages/mana-" + str(i) + ".bmp", "BMP")
-
-def normaliseManaImages(cumManaImages):
-	for i in range(11) + [12, 20]:
-		image = cumManaImages[i]
-		height, width = image.shape
-		maxVal = np.amax(image)
-		if maxVal != 0:
-			for row in range(height):
-				for col in range(width):
-					image[row, col] = float(image[row, col]) * (255.0 / maxVal)
-	return cumManaImages
-
-
-class Card:
-	manaLocation       =  ( 18,  22,  48,  62)
-	def __init__(self, image):
-		self.cardImage     = image
-		self.manaImage     = self.cardImage.crop(self.manaLocation)
-		self.mana = None
-
-
-class screenshotParser:
-	# Create dictionaries with resolutions as key to extend this
-	cardLocations     = [( 286,  165,  518,  534),  ( 527,  165,  755,  534),  ( 768,  165, 1000,  534),  (1009,  165, 1241,  534),
-	                     ( 286,  544,  518,  913),  ( 527,  544,  755,  913),  ( 768,  544, 1000,  913),  (1009,  544, 1241,  913)]
-	cardPresenceTest  = [( 500,  422,  516,  436),  ( 743,  422,  759,  436),  ( 981,  422,  997,  436),  (1222,  422, 1238,  436),
-	                     ( 500,  801,  516,  815),  ( 743,  801,  759,  815),  ( 981,  801,  997,  815),  (1222,  801, 1238,  815)]
-
-	classThreshold        = 125
-	cardPresenceThreshold = 100
-	manaThreshold         = 245
+class trainingDataBuilder:
 
 	def __init__(self):
-		self.manaArrays = self.loadManaArrays("./compImages/")
+		self.screenshotParser = ScreenshotParser()
 
-	def loadManaArrays(self, pathToImages):
-		arrays = {}
+	def createCumulativeManaImages(self, cards):
+		global actualManas
+		cumManaImages = {}
+		manaThreshold = 245
 		for i in range(11) + [12, 20]:
-			arrays[i] = np.asarray(Image.open(pathToImages + "mana-" + str(i) + ".bmp")).reshape(-1)
-		return arrays
+			cumManaImages[i] = np.zeros((40, 30), dtype=np.uint8)
 
-	def getCardMana(self, card, lowerLimit=0):
-		manaImage = imgToBW(card.manaImage, self.manaThreshold).reshape(-1)
+		for i in range(len(cards)):
+			card = cards[i]
+			mana = actualManas[i]
+		
+			if card.golden:
+				manaImage = imgToBW(card.cardImage.crop(self.screenshotParser.gManaLocation[card.cardType]), self.screenshotParser.manaThreshold)
+			else:
+				manaImage = imgToBW(card.cardImage.crop(self.screenshotParser.manaLocation), self.screenshotParser.manaThreshold)
+				cumManaImage = cumManaImages[mana]
+				for row in range(len(manaImage)):
+					for col in range(len(manaImage[row])):
+						if manaImage[row, col] == 0xFF:
+							cumManaImage[row, col] += 1
 
-		bestGuess = 0
-		bestMetric = 0
-		metrics = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}
-		for currentMana in range(11) + [12, 20]:
-			currentMetric = 0
-			currentManaRef = self.manaArrays[currentMana]
+		cumManaImages = self.normaliseManaImages(cumManaImages)
+		for i in range(11) + [12, 20]:
+			Image.fromarray(cumManaImages[i]).save("./compImages/mana-" + str(i) + ".bmp", "BMP")
 
-			for i in range(len(manaImage)):
-				if currentManaRef[i] in [0x00, 0xFF] and manaImage[i] != currentManaRef[i]:
-					metrics[currentMana] -= 255
-				else:
-					metrics[currentMana] += 0xFF - abs(int(manaImage[i]) - int(currentManaRef[i]))
-
-		for mana in range(11) + [12, 20]:
-			metrics[mana] /= len(manaImage)
-			if bestMetric < metrics[mana]:
-				bestMetric = metrics[mana]
-				bestGuess = mana
-		return metrics
-
-
-
-	def numOfCardsInScreenshot(self, screenshot):
-		count = 8
-		for box in self.cardPresenceTest:
-			array = imgToBW(screenshot.crop(box), self.cardPresenceThreshold, image=False).reshape(-1)
-			if 0 not in array:
-				count -= 1
-		return count
-
-	def getCards(self, pathToImages):
-		cards = []
-		for name in sorted(os.listdir(pathToImages)):
-			if name[-4:] == ".png":
-				screenshot = Image.open(pathToImages + name)
-				#currentClass = self.getClassFromScreenshot(screenshot)
-
-				for i in range(self.numOfCardsInScreenshot(screenshot)):
-					card = Card(screenshot.crop(self.cardLocations[i]))
-					cards.append(card)
-		return cards
+	def normaliseManaImages(self, cumManaImages):
+		for i in range(11) + [12, 20]:
+			image = cumManaImages[i]
+			height, width = image.shape
+			maxVal = np.amax(image)
+			if maxVal != 0:
+				for row in range(height):
+					for col in range(width):
+						image[row, col] = float(image[row, col]) * (255.0 / maxVal)
+		return cumManaImages
 
 	def getManaMetrics(self, cards):
 		count = 0
@@ -180,10 +115,9 @@ class screenshotParser:
 		                  12: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500},
 		                  20: {0:500, 1:500, 2:500, 3:500, 4:500, 5:500, 6:500, 7:500, 8:500, 9:500, 10:500, 12:500, 20:500}}
 
-
 		for card in cards:
 			actualMana = actualManas[count]
-			res = self.getCardMana(card, minMana)
+			res = self.screenshotParser.getCardMana(card, minMana)
 
 			for i in range(11) + [12, 20]:
 				metricsMeanAll[actualMana][i] += res[i]
@@ -191,7 +125,6 @@ class screenshotParser:
 				metricsMaxAll[actualMana][i] = max(res[i], metricsMaxAll[actualMana][i])
 			manaCount[actualMana] += 1
 
-			imgToBW(card.manaImage, self.manaThreshold, image=True).save("./temp/" + str(card.mana) + "-" + str(count) + ".bmp", "BMP")
 			count += 1
 
 		for i in range(11) + [12, 20]:
@@ -206,9 +139,34 @@ class screenshotParser:
 			print "    Min:  " + str(metricsMinAll[i])
 		return cards
 
+	# Just so we don't waste time getting all the stuff we don't need, I've copied this across
+	def getCardsFromImages(self, pathToImages):
+		cards = []
+		count = 0
+		minMana = 0
+		
+		global actualManas
+		for name in sorted(os.listdir(pathToImages)):
+			if name[-4:] == ".png":
+				screenshot = Image.open(pathToImages + name)
+				for i in range(self.screenshotParser.numOfCardsInScreenshot(screenshot)):
+					card = Card(screenshot.crop(self.screenshotParser.cardLocations[i]))
+					cards.append(card)
+					card.cardType = self.screenshotParser.getCardType(card)
+					card.golden = self.screenshotParser.isGolden(card)
+					card.mana = actualManas[count]
+					card.cardImage.save("./temp/" + str(count) + ".bmp", "BMP")
 
-p = screenshotParser()
-cards = p.getCards("./screencaps/")
-createCumulativeManaImages(cards)
-p.getManaMetrics(cards)
+
+					count += 1
+					print "Card " + str(count)
+		return cards
+
+if __name__ == "__main__":
+	p = trainingDataBuilder()
+	cards = p.getCardsFromImages("./screencaps/")
+	p.createCumulativeManaImages(cards)
+	p.getManaMetrics(cards)
+	
+
 
