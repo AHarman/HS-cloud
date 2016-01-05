@@ -151,25 +151,104 @@ actualTypes = ["Spell",  "Spell",  "Spell",  "Spell",  "Spell",  "Spell",  "Spel
 
 
 goldenMinions = [12, 107, 150, 157, 200, 208, 225, 227, 263, 274, 331, 343, 370, 412, 417, 423, 479, 492, 501, 505]
+              # Druid
+rarities = [ "Free",      "Free",      "Free",      "Free",      "Common",    "Free",      "Free",      "Common",
+             "Free",      "Free",      "Common",    "Common",    "Common",    "Common",    "Free",      "Free",  
+             "Common",    "Free",      "Common",    "Common",    "Common",    "Common",    "Free",      "Common",  
+             "Rare",      "Common",    "Common",    "Epic",      "Rare",      "Rare",      "Free",      "Rare",
+             "Epic",      "Epic",      "Free",      "Rare",
 
-#Only first 3 classes because lazy
-rarities = [ "Free",   "Free",   "Free",   "Free",   "Common", "Free",   "Free",   "Common",
-             "Free",   "Free",   "Common", "Common", "Common", "Common", "Free",   "Free",  
-             "Common", "Free",   "Common", "Common", "Free",   "Free",   "Common", "Free",  
-             "Rare",   "Common", "Common", "Epic",   "Rare",   "Rare",   "Free",   "Rare",
-             "Epic",   "Epic",   "Free",   "Rare",
-             "Free",   "Free",   "Free",   "Free",   "Free",   "Common", "Free",   "Free",  
-             "Common", "Common", "Common", "Rare",   "Rare",   "Common", "Epic",   "Rare",
-             "Rare",   "Common", "Common", "Epic",   "Common", "Common", "Common", "Epic",
-             "Rare",   "Free",   "Common", "Free",   "Rare",   "Common", "Rare",   "Free",  
-             "Rare",   "Free",   "Free",   "Common", "Rare",   "Common", "Common", "Rare",
-             "Epic",   "Legendary",
-             "Epic",   "Free",   "Free",   "Common", "Free",   "Free",   "Common", "Free",  
-             "Free",   "Common", "Free",   "Free",   "Rare",   "Rare",   "Common", "Common",
-             "Free",   "Free",   "Rare",   "Common", "Common", "Free",   "Free",   "Common",
-             "Common", "Rare",   "Rare",   "Rare",   "Rare",   "Rare",   "Common", "Epic",
-             "Free",   "Free",   "Common", "Rare",   "Rare",   "Free",   "Common", "Common",
-             "Free",   "Rare",   "Rare",   "Common"]
+             # Hunter
+             "Free",      "Free",      "Free",      "Free",      "Free",      "Common",    "Free",      "Free",  
+             "Common",    "Common",    "Common",    "Rare",      "Rare",      "Common",    "Epic",      "Rare",
+             "Rare",      "Common",    "Common",    "Epic",      "Common",    "Common",    "Common",    "Epic",
+             "Rare",      "Free",      "Common",    "Free",      "Rare",      "Common",    "Rare",      "Free",  
+             "Rare",      "Free",      "Free",      "Common",    "Rare",      "Free",      "Free",      "Rare",
+             "Epic",      "Legendary",
+
+             # Mage
+             "Epic",      "Free",      "Free",      "Common",    "Free",      "Free",      "Common",    "Free",  
+             "Free",      "Common",    "Free",      "Free",      "Rare",      "Rare",      "Common",    "Common",
+             "Free",      "Free",      "Rare",      "Common",    "Common",    "Free",      "Free",      "Common",
+             "Common",    "Rare",      "Rare",      "Rare",      "Rare",      "Rare",      "Common",    "Epic",
+             "Free",      "Free",      "Common",    "Rare",      "Rare",      "Free",      "Common",    "Common",
+             "Common",    "Rare",      "Rare",      "Free",
+
+             # Paladin
+             "Free",      "Free",      "Common",    "Free",      "Common",    "Rare",      "Common",    "Free",
+             "Free",      "Free",      "Free",      "Common",    "Common",    "Common",    "Common",    "Common",
+             "Rare",      "Free",      "Free",      "Common",    "Common",    "Common",    "Epic",      "Rare",
+             "Free",      "Free",      "Common",    "Common",    "Common",    "Rare",      "Common",    "Rare",
+             "Rare",      "Common",    "Rare",      "Rare",      "Common",    "Free",      "Free",      "Free",
+             "Rare",      "Epic",      "Epic",      "Free",
+
+             # Priest
+             "Common",    "Common",    "Common",    "Free",      "Free",      "Common",    "Rare",      "Free",
+             "Common",    "Free",      "Free",      "Common",    "Free",      "Free",      "Free",      "Free",
+             "Rare",      "Free",      "Rare",      "Rare",      "Common",    "Rare",      "Free",      "Epic",
+             "Common",    "Common",    "Common",    "Common",    "Rare",      "Epic",      "Rare",      "Common",
+             "Legendary", "Free",
+             "Common",    "Common",    "Rare",      "Rare",      "Free",      "Rare",      "Rare",      "Common",
+
+             # Rogue
+             "Common",    "Common",    "Rare",      "Common",    "Common",    "Free",      "Free",      "Rare",
+             "Free",      "Common",    "Common",    "Common",    "Free",      "Free",      "Free",      "Common",
+             "Common",    "Common",    "Common",    "Common",    "Rare",      "Epic",      "Common",    "Epic",
+             "Rare",      "Rare",      "Epic",      "Free",      "Free",      "Rare",      "Rare",      "Rare",
+             "Rare",      "Epic",      "Common",    "Common",    "Rare",      "Free",      "Free",      "Free",
+             "Rare",      "Rare",      "Common",    "Free",      "Free",      "Free",
+
+             # Shaman
+             "Free",      "Free",      "Free",      "Common",    "Common",    "Free",      "Common",    "Free",
+             "Common",    "Common",    "Common",    "Common",    "Rare",      "Common",    "Rare",      "Common",
+             "Free",      "Free",      "Common",    "Rare",      "Rare",      "Common",    "Rare",      "Rare",
+             "Free",      "Free",      "Epic",      "Rare",      "Free",
+             "Rare",      "Free",      "Rare",      "Rare",      "Common",    "Rare",      "Common",    "Common",
+
+             # Warlock
+             "Free",      "Free",      "Free",      "Free",      "Common",    "Common",    "Free",      "Common",
+             "Common",    "Rare",      "Free",      "Common",    "Common",    "Common",    "Common",    "Common",
+             "Rare",      "Free",      "Rare",      "Common",    "Rare",      "Free",      "Common",    "Free",
+             "Rare",      "Common",    "Rare",      "Free",      "Rare",      "Rare",      "Rare",      "Epic",
+             "Common",    "Common",    "Rare",      "Common",    "Common",    "Rare",      "Epic",      "Free",
+             "Free",      "Rare",      "Common",    "Legendary",
+
+             # Warrior
+             "Common",    "Free",      "Rare",      "Free",      "Common"   , "Free",      "Common",    "Common",
+             "Rare",      "Common",    "Free",      "Free",      "Free",      "Free",      "Common",    "Common",
+             "Free",      "Free",      "Free",      "Rare",      "Common",    "Common",    "Rare",      "Common",
+             "Free",      "Common",    "Rare",      "Common",    "Common",    "Free",      "Rare",      "Free",
+             "Rare",      "Epic",      "Rare",      "Rare",      "Epic",      "Epic",      "Common",
+
+             # Neutral
+             "Rare",      "Common",    "Common",    "Common",    "Rare",      "Common",    "Common",    "Rare",
+             "Rare",      "Rare",      "Common",    "Common",    "Free",      "Common",    "Common",    "Free",
+             "Free",      "Common",    "Free",      "Free",      "Rare",      "Common",    "Rare",      "Free",
+             "Common",    "Common",    "Common",    "Free",      "Common",    "Common",    "Rare",      "Free",
+             "Common",    "Free",      "Common",    "Common",    "Epic",      "Common",    "Common",    "Common",
+             "Common",    "Free",      "Common",    "Common",    "Common",    "Common",    "Common",    "Rare",
+             "Common",    "Common",    "Common",    "Free",      "Common",    "Rare",      "Free",      "Rare",
+             "Free",      "Common",    "Common",    "Common",    "Common",    "Rare",      "Rare",      "Rare",
+             "Common",    "Epic",      "Free",      "Common",    "Common",    "Rare",      "Common",    "Common",
+             "Common",    "Rare",      "Rare",      "Common",    "Common",    "Epic",      "Legendary", "Rare",
+             "Rare",      "Free",      "Common",    "Rare",      "Rare",      "Common",    "Common",    "Rare",
+             "Common",    "Common",    "Common",    "Rare",      "Rare",      "Common",    "Common",    "Rare",
+             "Rare",      "Rare",      "Free",      "Free",      "Common",    "Rare",      "Free",      "Rare",
+             "Common",    "Common",    "Rare",      "Common",    "Free",      "Free",      "Rare",      "Common",
+             "Epic",      "Free",      "Common",    "Common",    "Free",      "Epic",      "Epic",      "Common",
+             "Common",    "Common",    "Common",    "Common",    "Legendary", "Free",      "Common",    "Rare",
+             "Rare",      "Rare",      "Rare",      "Rare",      "Legendary", "Common",    "Free",      "Common",
+             "Common",    "Rare",      "Common",    "Free",      "Common",    "Common",    "Common",    "Free",
+             "Common",    "Rare",      "Rare",      "Common",    "Common",    "Common",    "Common",    "Free",
+             "Free",      "Common",    "Common",    "Free",      "Common",    "Common",    "Free",      "Common",
+             "Common",    "Rare",      "Rare",      "Common",    "Common",    "Rare",      "Common",    "Rare",
+             "Free",      "Common",    "Free",      "Epic",      "Epic",      "Legendary", "Free",      "Rare",
+             "Free",      "Common",    "Legendary", "Rare",      "Rare",      "Common",    "Free",      "Common",
+             "Rare",      "Common",    "Free",      "Free",      "Common",    "Legendary", "Common",    "Legendary",
+             "Common",    "Common",    "Rare",      "Common",    "Common",    "Legendary", "Free",      "Common",
+             "Free",      "Legendary", "Epic",      "Common",    "Free",      "Legendary", "Legendary", "Legendary",
+             "Common",    "Common",    "Free",      "Rare",      "Legendary", "Free",      "Free",      "Legendary",
+             "Common",    "Legendary", "Legendary", "Legendary", "Common",    "Epic"]
 frees   = len([x for x in rarities if x == "Free"])
 commons = len([x for x in rarities if x == "Common"])
 rares   = len([x for x in rarities if x == "Rare"])
