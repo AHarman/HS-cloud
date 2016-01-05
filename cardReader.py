@@ -43,6 +43,9 @@ class screenshotParser:
 	legendaryTest    =  ( 192,   13,  215,   23)
 	weaponTest       =  (  61,    6,   72,   21)
 	minionTest       =  (   0,  260,   10,  275)    #Needs to be checked AFTER weapon check
+	goldenTest       =  {"Spell" : (212, 126, 228, 132),
+	                     "Minion": ( 48, 139,  57, 159),
+	                     "Weapon": ( 48, 138,  57, 158)}
 	rarityLocation   =  {"Spell" : (113, 203, 122, 215),
 	                     "Minion": (120, 197, 129, 209), 
 	                     "Weapon": (118, 198, 127, 210)}
@@ -57,6 +60,9 @@ class screenshotParser:
 	legendaryThreshold    = 100
 	weaponThreshold       = 100
 	minionThreshold       = 100
+	goldenThresholds      = {"Minion": 50,
+	                         "Weapon": 50,
+	                         "Spell":  70}
 
 	def __init__(self):
 		self.manaArrays = self.loadManaArrays("./compImages/")
@@ -66,6 +72,13 @@ class screenshotParser:
 		for i in range(11) + [12, 20]:
 			arrays[i] = np.asarray(Image.open(pathToImages + "mana-" + str(i) + ".bmp")).reshape(-1)
 		return arrays
+
+	def isGolden(self, card):
+		if 0 in imgToBW(card.cardImage.crop(self.goldenTest[card.cardType]), self.goldenThresholds[card.cardType]):
+			return False
+
+		return True
+
 
 	def getCardQuantity(self, card):
 		if 0 in imgToBW(card.cardImage.crop(self.quantityTest), self.quantityThreshold).reshape(-1):
@@ -169,10 +182,11 @@ class screenshotParser:
 				for i in range(self.numOfCardsInScreenshot(screenshot)):
 					card = Card(screenshot.crop(self.cardLocations[i]))
 					cards.append(card)
-					card.rarity = self.getCardRarity(card)
+					#card.rarity = self.getCardRarity(card)
 					card.cardType = self.getCardType(card)
-					card.quantity = self.getCardQuantity(card)
-					card.mana = self.getCardMana(card, minMana)
+					#card.quantity = self.getCardQuantity(card)
+					self.isGolden(card)
+					#card.mana = self.getCardMana(card, minMana)
 					actualMana = actualManas[count]
 					#if card.mana != actualMana and card.mana != None:
 						#card.cardImage.show()
