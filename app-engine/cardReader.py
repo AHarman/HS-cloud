@@ -1,9 +1,9 @@
 import os
-import Image
+from   PIL   import Image
 import numpy as np
 import math
-import pylab as plt
 from   utils import *
+from   google.appengine.ext import blobstore
 
 np.set_printoptions(linewidth=150)
 
@@ -21,6 +21,7 @@ class Card:
 		self.cardType = None
 		self.mana = None
 		self.golden = None
+		self.possibles = None
 
 	def show(self):
 		return self.cardImage.show()
@@ -55,6 +56,8 @@ class ScreenshotParser:
 	                     "Warlock":(746,   0, 802,  20),
 	                     "Warrior":(816,   0, 872,  20),
 	                     "Neutral":(886,   0, 942,  20)}
+	minAttLocation   = (21, 284, 50, 321)
+	gMinAttLocation  = (17, 284, 46, 321)
 	
 	manaLocation     = ( 18,  22,  48,  62)
 	gManaLocation    = {"Minion": (14,  23,  44,  63),
@@ -77,13 +80,9 @@ class ScreenshotParser:
 	possibleManas = {}
 
 	def __init__(self):
-		self.manaArrays = self.loadManaArrays("./compImages/")
-
-	def loadManaArrays(self, pathToImages):
-		arrays = {}
-		for i in range(11) + [12, 20]:
-			arrays[i] = np.asarray(Image.open(pathToImages + "mana-" + str(i) + ".bmp")).reshape(-1)
-		return arrays
+		global manaArrays
+		self.manaArrays = manaArrays
+		#self.minAttArrays = {}
 
 	def isGolden(self, card):
 		if 0 in imgToBW(card.cardImage.crop(self.goldenTest[card.cardType]), self.goldenThresholds[card.cardType]):
@@ -99,11 +98,6 @@ class ScreenshotParser:
 
 	def isLegendary(self, card):
 		return (0 in imgToBW(card.cardImage.crop(self.legendaryTest), self.legendaryThreshold).reshape(-1))
-
-	def getCardRarity(self, card):
-		if self.isLegendary(card):
-			return "Legendary"
-		return None
 
 	def getCardType(self, card):
 		if card.rarity == "Legendary":
@@ -178,9 +172,35 @@ class ScreenshotParser:
 			return metrics
 		return bestGuess
 
+	def getMinAttack(self, card, getMetrics=False):
+		if card.golden:
+			minAttImage = imgToBW(card.cardImage.crop(self.gManaLocation[card.cardType]), self.manaThreshold).reshape(-1)
+		else:
+			minAttImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
+
+		bestGuess = None
+		bestMetric = 0
+		metrics = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 12:0, 20:0}
+		
+		for attack in range(11) + [12]:
+			currentMetric = 0
+			currentAttRef = self.minAttArrays[attack]
+
+			for i in range(len(minAttImage)):
+				if (minAttImage[i] == 0xFF and currentAttRef[i] != 0x00) or minAttImage[i] == currentAttRef[i]:
+					metrics[attack] += 1
+			#metrics[attack] /= len(minAttImage)
+
+			if metrics[attack] > bestMetric:
+				bestMetric = metrics[attack]
+				bestGuess = attack
+		if getMetrics:
+			return metrics
+		return bestGuess
+
+
 	def getClassFromScreenshot(self, screenshot, heroCounter):
 		heroes = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Neutral"]
-		print str(heroCounter) + " " + str(heroes[heroCounter:])
 		for hero in (heroes[heroCounter:]):
 			if 0xFF in imgToBW(screenshot.crop(self.heroLocation[hero]), self.heroThreshold):
 				return hero
@@ -193,54 +213,49 @@ class ScreenshotParser:
 				count -= 1
 		return count
 
-	# If you take two screenshots in the same second, they'll appear out of order when you sort them
-	def reorderImages(self, imageNames):
-		imageNames.sort()
-		i = 0
-		sortedImageNames = []
-		while i < len(imageNames):
-			image = imageNames[i]
-			if image[-4:] == ".png":
-				if image[-6:-5] == " ":
-					sortedImageNames.append(imageNames[i+1])
-					i += 1
-				sortedImageNames.append(image)
-			i += 1
-		return sortedImageNames
 
-	def getCardsFromImages(self, pathToImages):
+
+	def getCardsFromImages(self, images):
 		cards = []
 		count = 0
 		minMana = 0
 		heroCounter = 0
 		oldHero = "Druid"
+		mistakes = 0
 		
-		global rarities
-		for name in self.reorderImages(os.listdir(pathToImages)):
-			if name[-4:] == ".png":
-				screenshot = Image.open(pathToImages + name)
+		for image in images:
+			currentHero = self.getClassFromScreenshot(image, heroCounter)
+			if oldHero != currentHero:
+				minMana = 0
+				heroCounter += 1
+				oldHero = currentHero
+				print currentHero
 
-				currentHero = self.getClassFromScreenshot(screenshot, heroCounter)
-				if oldHero != currentHero:
-					minMana = 0
-					heroCounter += 1
-					oldHero = currentHero
-
-				for i in range(self.numOfCardsInScreenshot(screenshot)):
-					card = Card(screenshot.crop(self.cardLocations[i]))
-					cards.append(card)
-					card.cardType = self.getCardType(card)
-					card.golden = self.isGolden(card)
-					card.rarity = self.getCardRarity(card)
-					card.quantity = self.getCardQuantity(card)
-					card.hero = currentHero
-					minMana = self.getCardMana(card, lowerLimit=minMana)
-					card.mana = minMana
-					count += 1
-					print count
+			for i in range(self.numOfCardsInScreenshot(image)):
+				print i
+				card = Card(image.crop(self.cardLocations[i]))
+				cards.append(card)
+				card.cardType = self.getCardType(card)
+				card.golden = self.isGolden(card)
+				card.rarity = self.getCardRarity(card)
+				card.quantity = self.getCardQuantity(card)
+				card.hero = currentHero
+				#minMana = self.getCardMana(card, lowerLimit=minMana)
+				#card.mana = minMana
 		return cards
 
 
 if __name__ == "__main__":
 	p = ScreenshotParser()
 	cards = p.getCardsFromImages("./screencaps/")
+	# j = 0
+	# for i in range(len(cards)):
+	# 	card = cards[i]
+	# 	if card.cardType == "Minion":
+	# 		card.cardImage.save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + "k.png")
+	# 		if card.golden:
+	# 			imgToBW(card.cardImage.crop(p.gMinAttLocation), 245, image=True).save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + ".bmp")
+	# 		else:
+	# 			imgToBW(card.cardImage.crop(p.minAttLocation ), 245, image=True).save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + ".bmp")
+	# 		j += 1
+	# 		print j

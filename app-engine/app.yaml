@@ -1,0 +1,16 @@
+version: testing
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /.*
+  script: cloud.app
+
+libraries:
+- name: webapp2
+  version: latest
+- name: PIL
+  version: latest
+- name: numpy
+  version: latest
