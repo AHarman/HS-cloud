@@ -11,7 +11,7 @@ class Card:
 	#weaponTest        = (0, 0, 0, 0)    # TODO: Do this
 	#quantityThreshold = 125
 
-	def __init__(self, image):
+	def __init__(self, image=None):
 		self.cardImage = image
 
 		self.name     = None
@@ -21,6 +21,26 @@ class Card:
 		self.mana     = None
 		self.golden   = None
 		self.quantity = None
+
+	def toDict(self):
+		return {"name":     self.name,
+		        "hero":     self.hero,
+		        "rarity":   self.rarity,
+		        "cardType": self.cardType,
+		        "mana":     self.mana,
+		        "golden":   self.golden,
+		        "quantity": self.quantity}
+
+	@staticmethod
+	def fromDict(dictionary):
+		card = Card()
+		card.name     = dictionary["name"]
+		card.hero     = dictionary["hero"]
+		card.rarity   = dictionary["rarity"]
+		card.cardType = dictionary["cardType"]
+		card.mana     = dictionary["mana"]
+		card.golden   = dictionary["golden"]
+		card.quantity = dictionary["quantity"]
 
 	def show(self):
 		return self.cardImage.show()
@@ -211,8 +231,6 @@ class ScreenshotParser:
 			if 0 not in array:
 				count -= 1
 		return count
-
-
 
 	def getCardsFromImages(self, images):
 		cards = []
