@@ -3,7 +3,6 @@ from   PIL   import Image
 import numpy as np
 import math
 from   utils import *
-from   google.appengine.ext import blobstore
 
 np.set_printoptions(linewidth=150)
 
@@ -15,13 +14,13 @@ class Card:
 	def __init__(self, image):
 		self.cardImage = image
 
-		self.name = None
-		self.hero = None
-		self.rarity = None
+		self.name     = None
+		self.hero     = None
+		self.rarity   = None
 		self.cardType = None
-		self.mana = None
-		self.golden = None
-		self.possibles = None
+		self.mana     = None
+		self.golden   = None
+		self.quantity = None
 
 	def show(self):
 		return self.cardImage.show()
@@ -217,7 +216,6 @@ class ScreenshotParser:
 
 	def getCardsFromImages(self, images):
 		cards = []
-		count = 0
 		minMana = 0
 		heroCounter = 0
 		oldHero = "Druid"
@@ -232,7 +230,6 @@ class ScreenshotParser:
 				print currentHero
 
 			for i in range(self.numOfCardsInScreenshot(image)):
-				print i
 				card = Card(image.crop(self.cardLocations[i]))
 				cards.append(card)
 				card.cardType = self.getCardType(card)
@@ -240,22 +237,35 @@ class ScreenshotParser:
 				card.rarity = self.getCardRarity(card)
 				card.quantity = self.getCardQuantity(card)
 				card.hero = currentHero
-				#minMana = self.getCardMana(card, lowerLimit=minMana)
-				#card.mana = minMana
+				minMana = self.getCardMana(card, lowerLimit=minMana)
+				card.mana = minMana
+				# For memory
+				card.cardImage = None
 		return cards
 
 
+def reorderImages(imageNames):
+	imageNames.sort()
+	i = 0
+	sortedImageNames = []
+	while i < len(imageNames):
+		image = imageNames[i]
+		if image[-4:] == ".png":
+			if image[-6:-5] == " ":
+				sortedImageNames.append(imageNames[i+1])
+				i += 1
+			sortedImageNames.append(image)
+		i += 1
+	return sortedImageNames
+
+
 if __name__ == "__main__":
+	images = []
+	for name in reorderImages(os.listdir("../screencaps/")):
+		if name[-4:] == ".png":
+			images.append(Image.open("../screencaps/" + name))
+
 	p = ScreenshotParser()
-	cards = p.getCardsFromImages("./screencaps/")
-	# j = 0
-	# for i in range(len(cards)):
-	# 	card = cards[i]
-	# 	if card.cardType == "Minion":
-	# 		card.cardImage.save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + "k.png")
-	# 		if card.golden:
-	# 			imgToBW(card.cardImage.crop(p.gMinAttLocation), 245, image=True).save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + ".bmp")
-	# 		else:
-	# 			imgToBW(card.cardImage.crop(p.minAttLocation ), 245, image=True).save("temp/attack-" + str(minAttacks[j]) + "-" + str(j) + ".bmp")
-	# 		j += 1
-	# 		print j
+	cards = p.getCardsFromImages(images)
+	print "Here " + str(len(cards))
+	
