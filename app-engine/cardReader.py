@@ -245,7 +245,7 @@ class ScreenshotParser:
 				minMana = 0
 				heroCounter += 1
 				oldHero = currentHero
-				print currentHero
+				#print currentHero
 
 			for i in range(self.numOfCardsInScreenshot(image)):
 				card = Card(image.crop(self.cardLocations[i]))
