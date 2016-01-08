@@ -41,6 +41,7 @@ class Card:
 		card.mana     = dictionary["mana"]
 		card.golden   = dictionary["golden"]
 		card.quantity = dictionary["quantity"]
+		return card
 
 	def show(self):
 		return self.cardImage.show()

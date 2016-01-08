@@ -13,6 +13,7 @@ function checkStatus()
 				console.log("We're done here!");
 				document.getElementById("waitingText").innerHTML = "<p>Processing complete!</p>";
 				clearInterval(stop)
+				window.location.href="/results"
 			}
 			else
 			{

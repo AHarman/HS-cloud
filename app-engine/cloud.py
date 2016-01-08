@@ -1,6 +1,8 @@
 import cgi
-
 import webapp2
+import jinja2
+import os
+import ast
 import lib.cloudstorage as gcs
 from google.appengine.api import users
 from google.appengine.api import taskqueue
@@ -9,6 +11,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import ndb
 from PIL import Image
 from cardReader import ScreenshotParser, Card
+from collectionAnalyser import Analyser
 
 # Should probably do this a better way, but then I'm not using CSS or any proper layouts
 MAIN_PAGE_HTML = """\
@@ -39,6 +42,11 @@ PROCESSING_PAGE_HTML = """\
 </html>
 """
 
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
+
 class MainPage(webapp2.RequestHandler):
 	def get(self):
 		user = users.get_current_user()
@@ -51,10 +59,11 @@ class MainPage(webapp2.RequestHandler):
 				screenshotQuery = UserScreenshot.query(UserScreenshot.user == user.user_id())
 				ssResults = screenshotQuery.fetch(None, keys_only=True)
 				for entry in ssResults:
-					print "Deleting old data"
+					#print "Deleting old data"
 					entry.delete()
 			else:
-				userCollection = UserCollection(user=user.user_id())
+				userCollection = UserCollection(user=user.user_id(),
+					parent=ndb.Key('UserCollection', user.user_id()))
 				userCollection.put()
 
 			# There's less than 800 cards, 1600 incl. golden, 8 per page, + 10 for half full pages
@@ -74,7 +83,6 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler, webapp2.RequestHa
 		try:
 			user = users.get_current_user()
 			uploads = self.get_uploads()
-			print uploads[0].filename
 			user_upload = UserScreenshot(
 				user=user.user_id(),
 				blob_key=uploads[0].key(),
@@ -138,11 +146,47 @@ class ProcessingHandler(webapp2.RequestHandler):
 			query = UserScreenshot.query(UserScreenshot.processed == False,
 				                         ancestor=ndb.Key('UserCollection', user.user_id()))
 			results = query.fetch()
+			if len(results) != 0:
+				self.response.write(len(results))
+			else:
+				self.collateResults(user)
+				self.response.write(len(results))
+		return
 
-			self.response.write(len(results))
-			
+	def collateResults(self, user):
+		screenshotQuery = UserScreenshot.query(ancestor=ndb.Key('UserCollection', user.user_id()))
+		screenshots = screenshotQuery.fetch(None)
 
-class ImageProcessingHandler(webapp2.RequestHandler):
+		collectionQuery = UserCollection.query(UserCollection.user == user.user_id())
+		collection = collectionQuery.fetch(1)[0]
+		print "here"
+		print collection
+		collection.collection = ""
+
+		for screenshot in screenshots:
+			collection.collection += screenshot.cards + "\n"
+			screenshot.key.delete()
+		collection.collection = collection.collection[:-1]
+		collection.put()
+		return
+
+
+class ResultHandler(webapp2.RequestHandler):
+	def get(self):
+		user = users.get_current_user()
+		if not user:
+			self.redirect(users.create_login_url(self.request.uri))
+		else:
+			collectionQuery = UserCollection.query(ancestor=ndb.Key('UserCollection', user.user_id()))
+			collection = collectionQuery.fetch(1)[0]
+			print "This be where the problem be!"
+			print collection
+			analyser = Analyser(collection.collection, stringDicts=True)
+			template = JINJA_ENVIRONMENT.get_template('result.html')
+			self.response.write(template.render({'analyser': analyser}))
+
+
+class ImageProcessingWorker(webapp2.RequestHandler):
 	def post(self):
 		user = users.get_current_user()
 		minIndex = int(self.request.get("minIndex"))
@@ -162,15 +206,15 @@ class ImageProcessingHandler(webapp2.RequestHandler):
 			image = Image.open(reader)
 			image.load()
 			images.append(image)
-			#entry.key.delete()
 
 		p = ScreenshotParser()
 		cards = p.getCardsFromImages(images)
 		for i in range(0, len(results)):
-			#for j in range(i*8, min((i*8)+8, len(cards))):
-			#	print str(i+j) + " of " + str(len(cards))
-			#	results[i].cards = str(cards[i + j].toDict()) + " "
-			#results[i].cards = results[i].cards[:-1]
+			# Bit of a fudge here, could get the ScreenshotParser to give us how many cards per image
+			results[i].cards = ""
+			for j in range(i * 8, min(i*8 + 8, len(cards))):
+				results[i].cards += str(cards[j].toDict()) + "\n"
+			results[i].cards = results[i].cards[:-1]    # Remove last newline
 			blobstore.delete(results[i].blob_key)
 			results[i].processed = True
 			results[i].put()
@@ -191,6 +235,7 @@ class UserCollection(ndb.Model):
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/upload', UploadHandler),
-	('/worker', ImageProcessingHandler),
-	('/processing', ProcessingHandler)
+	('/worker', ImageProcessingWorker),
+	('/processing', ProcessingHandler),
+	('/results', ResultHandler)
 ], debug=True)

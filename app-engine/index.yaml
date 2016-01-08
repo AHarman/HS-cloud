@@ -11,6 +11,6 @@ indexes:
 # your application using appcfg.py.
 
 - kind: UserScreenshot
+  ancestor: yes
   properties:
-  - name: user
-  - name: number
+  - name: index
