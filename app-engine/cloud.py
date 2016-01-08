@@ -24,7 +24,9 @@ MAIN_PAGE_HTML = """\
 			<button type="button" onclick="upload()">Upload</button>
 		</form>
 		<br/><br/>
-		<div id="uploadStatus"></div>
+		<div id="uploadStatus">
+			<p>You can access your previous results <a href="/results">here</a></p>
+		</div>
 	</body>
 </html>
 """
@@ -212,7 +214,6 @@ class ResultHandler(webapp2.RequestHandler):
 				return
 			analyser = Analyser(collection.collection, stringDicts=True)
 			self.response.headers['Content-Type'] = 'application/csv'
-			print analyser.potentialCardsToCSV()
 			self.response.write(analyser.potentialCardsToCSV())
 		return
 
