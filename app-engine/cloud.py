@@ -33,7 +33,7 @@ PROCESSING_PAGE_HTML = """\
 	<script src="scripts/processing.js"></script>
 	<body>
 		<div id="waitingText">
-			<p> Currently waiting for results. This should take less than a minute.</p>
+			<p>Currently waiting for results. This should take less than a minute.</p>
 		</div>
 	</body>
 </html>
@@ -43,6 +43,20 @@ class MainPage(webapp2.RequestHandler):
 	def get(self):
 		user = users.get_current_user()
 		if user:
+			
+			# Make sure we've cleared the datastore of a users old stuff, or we get blobstore errors
+			collectionQuery = UserCollection.query(UserCollection.user == user.user_id())
+			collectionResults = collectionQuery.fetch(1, keys_only=True)
+			if collectionResults:
+				screenshotQuery = UserScreenshot.query(UserScreenshot.user == user.user_id())
+				ssResults = screenshotQuery.fetch(None, keys_only=True)
+				for entry in ssResults:
+					print "Deleting old data"
+					entry.delete()
+			else:
+				userCollection = UserCollection(user=user.user_id())
+				userCollection.put()
+
 			# There's less than 800 cards, 1600 incl. golden, 8 per page, + 10 for half full pages
 			# 200 is above what we need.
 			html = "<!DOCTYPE html>\n<html>\n  <meta charset=\"UTF-8\"/>\n"
@@ -124,7 +138,7 @@ class ProcessingHandler(webapp2.RequestHandler):
 			query = UserScreenshot.query(UserScreenshot.processed == False,
 				                         ancestor=ndb.Key('UserCollection', user.user_id()))
 			results = query.fetch()
-			print results
+
 			self.response.write(len(results))
 			
 
@@ -148,14 +162,18 @@ class ImageProcessingHandler(webapp2.RequestHandler):
 			image = Image.open(reader)
 			image.load()
 			images.append(image)
-			blobstore.delete(blob_key)
 			#entry.key.delete()
-			entry.processed = True
-			entry.put()
 
 		p = ScreenshotParser()
 		cards = p.getCardsFromImages(images)
-		print str(len(cards)) + " cards in " + str(len(results)) + " images"
+		for i in range(0, len(results)):
+			#for j in range(i*8, min((i*8)+8, len(cards))):
+			#	print str(i+j) + " of " + str(len(cards))
+			#	results[i].cards = str(cards[i + j].toDict()) + " "
+			#results[i].cards = results[i].cards[:-1]
+			blobstore.delete(results[i].blob_key)
+			results[i].processed = True
+			results[i].put()
 		return
 
 class UserScreenshot(ndb.Model):
@@ -164,9 +182,11 @@ class UserScreenshot(ndb.Model):
 	filename   = ndb.StringProperty(indexed=False)
 	index      = ndb.IntegerProperty(indexed=True)
 	processed  = ndb.BooleanProperty(indexed=True)
+	cards      = ndb.TextProperty(indexed=False)
 
 class UserCollection(ndb.Model):
 	user = ndb.StringProperty()
+	collection = ndb.TextProperty()
 
 app = webapp2.WSGIApplication([
 	('/', MainPage),
