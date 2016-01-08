@@ -10,22 +10,32 @@ from google.appengine.ext import ndb
 from PIL import Image
 from cardReader import ScreenshotParser, Card
 
-
-#<!DOCTYPE html>
-#<html>
-#  <meta charset=UTF-8/>
+# Should probably do this a better way, but then I'm not using CSS or any proper layouts
 MAIN_PAGE_HTML = """\
-  <script src="scripts/upload.js"></script> 
-  <body>
-    <h1>Hearthstone analyser</h1>
-    <form method="POST" action={0} enctype="multipart/form-data">
-      <label for="title">Upload screenshots </label>
-      <input type="file" name="screenshot" id="files" multiple/>
-      <button type="button" onclick="upload()">Upload</button>
-    </form>
-    <br/><br/>
-    <div id="uploadStatus"></div>
-  </body>
+	<script src="scripts/upload.js"></script> 
+	<body>
+		<h1>Hearthstone analyser</h1>
+		<form method="POST" action={0} enctype="multipart/form-data">
+			<label for="title">Upload screenshots </label>
+			<input type="file" name="screenshot" id="files" multiple/>
+			<button type="button" onclick="upload()">Upload</button>
+		</form>
+		<br/><br/>
+		<div id="uploadStatus"></div>
+	</body>
+</html>
+"""
+
+PROCESSING_PAGE_HTML = """\
+<!DOCTYPE html>
+<html>
+	<meta charset="UTF-8"/>
+	<script src="scripts/processing.js"></script>
+	<body>
+		<div id="waitingText">
+			<p> Currently waiting for results. This should take less than a minute.</p>
+		</div>
+	</body>
 </html>
 """
 
@@ -44,7 +54,6 @@ class MainPage(webapp2.RequestHandler):
 			self.redirect(users.create_login_url(self.request.uri))
 		return
 
-#class oneUploadHandler(blobstore_handlers.BlobstoreUploadHandler):
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler, webapp2.RequestHandler):
 	def post(self):
@@ -57,7 +66,8 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler, webapp2.RequestHa
 				blob_key=uploads[0].key(),
 				filename=uploads[0].filename,
 				index=0,
-				processed=False)
+				processed=False,
+				parent=ndb.Key('UserCollection', user.user_id()))
 			user_upload.put()
 			self.response.write("uploaded")
 
@@ -66,24 +76,19 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler, webapp2.RequestHa
 			self.error(500)
 		return
 
-class ResultHandler(webapp2.RequestHandler):
+class ProcessingHandler(webapp2.RequestHandler):
 	def get(self):
 		user = users.get_current_user()
 		if not user:
 			self.redirect(users.create_login_url(self.request.uri))
 		else:
-			query = UserScreenshot.query(UserScreenshot.user == user.user_id())
+			query = UserScreenshot.query(ancestor=ndb.Key('UserCollection', user.user_id()))
 			results = query.fetch(None)
 			
 			length = len(results)
 			if length == 0:
 				self.redirect("/")
 			else:
-				userCollection = UserCollection(
-					user=user.user_id(),
-					collection="")
-				userCollection.put()
-
 				results = self.reorderImages(results)
 				for i in range(len(results)):
 					entry = results[i]
@@ -93,10 +98,9 @@ class ResultHandler(webapp2.RequestHandler):
 					taskqueue.add(url='/worker', params={"userID": user.user_id(),
 						                                 "minIndex": i,
 					 	                                 "maxIndex": min(i + 5, len(results))})
+				self.response.out.write(PROCESSING_PAGE_HTML)
 
-				#self.response.write("You have " + str(cards) + " cards")
 		return
-
 
 	def reorderImages(self, userScreenshots):
 		userScreenshots.sort(key=lambda x: x.filename)
@@ -111,53 +115,62 @@ class ResultHandler(webapp2.RequestHandler):
 			i += 1
 		return sortedUserScreenshots
 
+	# Because I can't get CORS to work, we're going to stick this in here as a POST.
+	def post(self):
+		user = users.get_current_user()
+		if not user:
+			self.redirect(users.create_login_url(self.request.uri))
+		else:
+			query = UserScreenshot.query(UserScreenshot.processed == False,
+				                         ancestor=ndb.Key('UserCollection', user.user_id()))
+			results = query.fetch()
+			print results
+			self.response.write(len(results))
+			
 
 class ImageProcessingHandler(webapp2.RequestHandler):
 	def post(self):
+		user = users.get_current_user()
 		minIndex = int(self.request.get("minIndex"))
 		maxIndex = int(self.request.get("maxIndex"))
 		userID = self.request.get("userID")
-		query = UserScreenshot.query(UserScreenshot.user  == userID,
-			                         UserScreenshot.index >= minIndex,
-			                         UserScreenshot.index <  maxIndex
+		query = UserScreenshot.query(UserScreenshot.index >= minIndex,
+			                         UserScreenshot.index <  maxIndex,
+			                         ancestor=ndb.Key('UserCollection', userID)
 			                         ).order(UserScreenshot.index)
 
 		results = query.fetch(None)
 		images = []
 		for entry in results:
-			try:
-				blob_key = entry.blob_key
-				blobstore.get(blob_key)
-				reader = blobstore.BlobReader(blob_key)
-				image = Image.open(reader)
-				image.load()
-				images.append(image)
-				blobstore.delete(blob_key)
-				entry.key.delete()
-			except Exception as e:
-				print "Database exception"
-				print e
-				return
+			blob_key = entry.blob_key
+			blobstore.get(blob_key)
+			reader = blobstore.BlobReader(blob_key)
+			image = Image.open(reader)
+			image.load()
+			images.append(image)
+			blobstore.delete(blob_key)
+			#entry.key.delete()
+			entry.processed = True
+			entry.put()
 
 		p = ScreenshotParser()
 		cards = p.getCardsFromImages(images)
-		print str(len(cards)) + " cards in " + str(maxIndex - minIndex) + " images"
+		print str(len(cards)) + " cards in " + str(len(results)) + " images"
 		return
 
 class UserScreenshot(ndb.Model):
-	user      = ndb.StringProperty(indexed=True)
-	blob_key  = ndb.BlobKeyProperty(indexed=False)
-	filename  = ndb.StringProperty(indexed=False)
-	index     = ndb.IntegerProperty(indexed=True)
-	processed = ndb.BooleanProperty(indexed=False)
+	user       = ndb.StringProperty(indexed=True)
+	blob_key   = ndb.BlobKeyProperty(indexed=False)
+	filename   = ndb.StringProperty(indexed=False)
+	index      = ndb.IntegerProperty(indexed=True)
+	processed  = ndb.BooleanProperty(indexed=True)
 
 class UserCollection(ndb.Model):
 	user = ndb.StringProperty()
-	collection = ndb.TextProperty()
 
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/upload', UploadHandler),
 	('/worker', ImageProcessingHandler),
-	('/result', ResultHandler),
+	('/processing', ProcessingHandler)
 ], debug=True)

@@ -20,7 +20,7 @@ function successMessage()
 {
 	console.log("All images uploaded");
 	document.getElementById("uploadStatus").innerHTML = "All images uploaded";
-	window.location.href="/result"
+	window.location.href="/processing"
 }
 
 function updateUploadStatus()
