@@ -159,8 +159,6 @@ class ProcessingHandler(webapp2.RequestHandler):
 
 		collectionQuery = UserCollection.query(UserCollection.user == user.user_id())
 		collection = collectionQuery.fetch(1)[0]
-		print "here"
-		print collection
 		collection.collection = ""
 
 		for screenshot in screenshots:
@@ -178,12 +176,53 @@ class ResultHandler(webapp2.RequestHandler):
 			self.redirect(users.create_login_url(self.request.uri))
 		else:
 			collectionQuery = UserCollection.query(ancestor=ndb.Key('UserCollection', user.user_id()))
-			collection = collectionQuery.fetch(1)[0]
-			print "This be where the problem be!"
-			print collection
+			collection = collectionQuery.fetch(1)
+			if len(collection) == 0:
+				self.shouldntBeHere()
+				return
+			collection = collection[0]
+			if not collection.collection:
+				self.shouldntBeHere()
+				return
+			if len(collection.collection) == 0:
+				self.shouldntBeHere()
+				return
+
 			analyser = Analyser(collection.collection, stringDicts=True)
 			template = JINJA_ENVIRONMENT.get_template('result.html')
 			self.response.write(template.render({'analyser': analyser}))
+		return
+
+	def post(self):
+		user = users.get_current_user()
+		if not user:
+			self.redirect(users.create_login_url(self.request.uri))
+		else:
+			collectionQuery = UserCollection.query(ancestor=ndb.Key('UserCollection', user.user_id()))
+			collection = collectionQuery.fetch(1)
+			if len(collection) == 0:
+				self.shouldntBeHere()
+				return
+			collection = collection[0]
+			if not collection.collection:
+				self.shouldntBeHere()
+				return
+			if len(collection.collection) == 0:
+				self.shouldntBeHere()
+				return
+			analyser = Analyser(collection.collection, stringDicts=True)
+			self.response.headers['Content-Type'] = 'application/csv'
+			print analyser.potentialCardsToCSV()
+			self.response.write(analyser.potentialCardsToCSV())
+		return
+
+	def shouldntBeHere(self):
+		html = "<!DOCTYPE html><html><meta charset=\"UTF-8\"/>"
+		html += "<h1>It appears we have no data for you.</h1>"
+		html += "<p>Please return to our <a href=\"/\">homepage</a>.</p>"
+		html += "</html>"
+		self.response.write(html)
+		return
 
 
 class ImageProcessingWorker(webapp2.RequestHandler):

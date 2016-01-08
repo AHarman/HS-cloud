@@ -87,7 +87,7 @@ class Analyser:
 		self.enchantValue = 0
 		self.cardKnowledge = []
 		
-		self.numCards = len(cards)
+		self.numCards = len(self.cards)
 		self.goldCards = 0
 		for card in self.cards:
 			if card.golden:
@@ -153,22 +153,33 @@ class Analyser:
 		for i in range(len(tempList)):
 			card = tempList[i]
 			possibilities = [x["Name"] for x in cardDict[card.hero][card.cardType][card.rarity][card.mana]]
-			self.cardKnowledge.append({"names":    possibilities, 
-				                       "quantity": card.quantity, 
-				                       "golden":   card.golden,
-				                       "overlaps": overlaps[i]})
+			self.cardKnowledge.append({"names":    possibilities,
+			                           "hero":     card.hero,
+			                           "mana":     card.mana, 
+			                           "rarity":   card.rarity,
+			                           "cardType": card.cardType,
+			                           "quantity": card.quantity, 
+			                           "golden":   card.golden,
+			                           "overlaps": overlaps[i]})
 		return
 
 	def potentialCardsToCSV(self):
 		csv = "[Table 1]\n"
-		csv += "Potential cards,Quantity,isGolden,Overlaps\n"
-		for card in self.cardKnowledge:
-			for cardName in card["names"][:-1]:
-				csv += cardName + "/"
-			csv += card["names"][-1] + ","
-			csv += str(card["quantity"]) + ","
-			csv += str(card["golden"])   + ","
-			csv += str(card["overlaps"]) + "\n"
+		csv += "Potential cards,Class,Mana,Rarity,Type,Quantity,Golden?,Overlaps\n"
+		for hero in self.listheroes:
+			for mana in range(11) + [12, 20]:
+				for card in [x for x in self.cardKnowledge if (x["hero"] == hero and x["mana"] == mana)]:
+					for cardName in card["names"][:-1]:
+						csv += cardName + "/"
+					csv +=     card["names"][-1] + ","
+					csv +=     card["hero"]      + ","
+					csv += str(card["mana"])     + ","
+					csv +=     card["rarity"]    + ","
+					csv +=     card["cardType"]  + ","
+					csv += str(card["quantity"]) + ","
+					csv += str(card["golden"])   + ","
+					csv += str(card["overlaps"]) + "\n"
+		return csv
 
 def reorderImages(imageNames):
 	imageNames.sort()
