@@ -59,10 +59,11 @@ class MainPage(webapp2.RequestHandler):
 			collectionResults = collectionQuery.fetch(1, keys_only=True)
 			if collectionResults:
 				screenshotQuery = UserScreenshot.query(UserScreenshot.user == user.user_id())
-				ssResults = screenshotQuery.fetch(None, keys_only=True)
+				ssResults = screenshotQuery.fetch(None)
 				for entry in ssResults:
 					#print "Deleting old data"
-					entry.delete()
+					blobstore.delete(entry.blob_key)
+					entry.key.delete()
 			else:
 				userCollection = UserCollection(user=user.user_id(),
 					parent=ndb.Key('UserCollection', user.user_id()))
@@ -106,23 +107,35 @@ class ProcessingHandler(webapp2.RequestHandler):
 		if not user:
 			self.redirect(users.create_login_url(self.request.uri))
 		else:
-			query = UserScreenshot.query(ancestor=ndb.Key('UserCollection', user.user_id()))
-			results = query.fetch(None)
+			try:
+				query = UserScreenshot.query(ancestor=ndb.Key('UserCollection', user.user_id()))
+				results = query.fetch(None)
 			
-			length = len(results)
-			if length == 0:
-				self.redirect("/")
-			else:
-				results = self.reorderImages(results)
-				for i in range(len(results)):
-					entry = results[i]
-					entry.index = i;
-					entry.put()
-				for i in range(0, len(results), 5):
-					taskqueue.add(url='/worker', params={"userID": user.user_id(),
-						                                 "minIndex": i,
-					 	                                 "maxIndex": min(i + 5, len(results))})
-				self.response.out.write(PROCESSING_PAGE_HTML)
+				length = len(results)
+				if length == 0:
+					self.redirect("/")
+				else:
+					results = self.reorderImages(results)
+					for i in range(len(results)):
+						entry = results[i]
+						entry.index = i;
+						entry.put()
+					for i in range(0, len(results), 5):
+						taskqueue.add(queue_name="imageprocessing",
+						              url='/worker', params={"userID": user.user_id(),
+							                                 "minIndex": i,
+							                                 "maxIndex": min(i + 5, len(results))})
+					self.response.out.write(PROCESSING_PAGE_HTML)
+			except Exception as e:
+				print e
+				print type(e)
+				html = "<!DOCTYPE html><html><meta charset=\"UTF-8\"/>"
+				html += "<h1>Something went wrong :(</h1>"
+				html += "<p>Please return to our <a href=\"/\">homepage</a>.</p>"
+				html += "<p>If this issue persists, please raise an issue <a href=\"https://github.com/AHarman/HS-cloud\">here</a>.</p>"
+				html += "</html>"
+				self.response.write(html)
+
 
 		return
 

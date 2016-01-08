@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+	<meta charset="UTF-8"/>
+	<body>
+		<h1>Your collection:</h1>
+		<p>In total you have {{ analyser.numCards }} cards</p>
+		<table border="1">
+			<th>Class:</th>
+			<th colspan="2">Total cards (gold):</th>
+			<th align="right" colspan="2">Dust value:</th>
+			<th align="right" colspan="2">Free (gold):</th>
+			<th align="right" colspan="2">Common (gold):</th>
+			<th align="right" colspan="2">Rare (gold):</th>
+			<th align="right" colspan="2">Epic (gold):</th>
+			<th align="right" colspan="2">Legendary (gold):</th>
+			{% for hero in analyser.listheroes %}
+				<tr>
+					<td>{{ hero }}:</td>
+					<td align="right">{{ analyser.classCount[hero][0] }}</td>
+					<td align="right">({{ analyser.classCount[hero][1] }})</td>
+					<td align="right">{{ analyser.classDust[hero][0] }}</td>
+					<td align="right">{{ analyser.classDust[hero][1] }}</td>
+					{% for rarity in analyser.listrarities: %}
+						<td align="right">{{ analyser.classRarity[hero][rarity] }}</td>
+						<td align="right">({{ analyser.gClassRarity[hero][rarity] }})</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+			<tr>
+				<td>Total:</td>
+				<td align="right">{{ analyser.numCards }}</td>
+				<td align="right">({{ analyser.goldCards }})</td>
+				<td align="right">{{ analyser.enchantValue }}</td>
+				<td align="right">{{ analyser.disenchantValue }}</td>
+				{% for rarity in analyser.listrarities: %}
+					<td align="right">{{ analyser.rarities[rarity] }}</td>
+					<td align="right">({{ analyser.gRarities[rarity] }})</td>
+				{% endfor %}
+			</tr>
+		</table>
+		<br/>
+		<p> Get collection CSV: (feature not yet finished, instead of giving a list of cards this gives a list of what the cards <em>could</em> be.)</p>
+		<form action="/results", method="POST", enctype="multipart/form-data">
+			<input type="submit", name="Get CSV", value="Get CSV">
+		<form>
+	</body>
+</html>
+{% endautoescape %}

@@ -1,0 +1,4 @@
+queue:
+- name: imageprocessing
+  rate: 100/s
+  bucket_size: 100
