@@ -149,6 +149,8 @@ class ScreenshotParser:
 			colours[1] += hist[j + 256] * j
 			colours[2] += hist[j + 512] * j
 
+		# If these numbers look like they're magic, it's because they are.
+		# I looked at the colours for a bunch of cards around the rarity gem and came up with these rules
 		if colours[2] > 2.5 * colours[0]:
 			return "Rare"
 		if colours[1] * 2 < colours[0]:
@@ -160,6 +162,7 @@ class ScreenshotParser:
 
 	# TODO: Make sure this works for mana of 10, 12 and 20 (I don't have those cards in the test data)
 	# Could optimise this as you know that, say, you're not going to go from 1 mana to 5 because of basic cards
+	# Uses a lower limit to improve accuracy.
 	def getCardMana(self, card, lowerLimit=0, getMetrics=False):
 		if card.golden:
 			manaImage = imgToBW(card.cardImage.crop(self.gManaLocation[card.cardType]), self.manaThreshold).reshape(-1)
@@ -192,11 +195,11 @@ class ScreenshotParser:
 			return metrics
 		return bestGuess
 
-	def getMinAttack(self, card, getMetrics=False):
+	def getMinionAttack(self, card, getMetrics=False):
 		if card.golden:
-			minAttImage = imgToBW(card.cardImage.crop(self.gManaLocation[card.cardType]), self.manaThreshold).reshape(-1)
+			minionAttackImage = imgToBW(card.cardImage.crop(self.gManaLocation[card.cardType]), self.manaThreshold).reshape(-1)
 		else:
-			minAttImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
+			minionAttackImage = imgToBW(card.cardImage.crop(self.manaLocation), self.manaThreshold).reshape(-1)
 
 		bestGuess = None
 		bestMetric = 0
@@ -206,10 +209,10 @@ class ScreenshotParser:
 			currentMetric = 0
 			currentAttRef = self.minAttArrays[attack]
 
-			for i in range(len(minAttImage)):
-				if (minAttImage[i] == 0xFF and currentAttRef[i] != 0x00) or minAttImage[i] == currentAttRef[i]:
+			for i in range(len(minionAttackImage)):
+				if (minionAttackImage[i] == 0xFF and currentAttRef[i] != 0x00) or minionAttackImage[i] == currentAttRef[i]:
 					metrics[attack] += 1
-			#metrics[attack] /= len(minAttImage)
+			#metrics[attack] /= len(minionAttackImage)
 
 			if metrics[attack] > bestMetric:
 				bestMetric = metrics[attack]
@@ -246,7 +249,7 @@ class ScreenshotParser:
 				minMana = 0
 				heroCounter += 1
 				oldHero = currentHero
-				#print currentHero
+				print currentHero
 
 			for i in range(self.numOfCardsInScreenshot(image)):
 				card = Card(image.crop(self.cardLocations[i]))
@@ -263,6 +266,7 @@ class ScreenshotParser:
 		return cards
 
 
+# If two screenshots are taken in the same second, they'll be the wrong way around if we just sort() them.
 def reorderImages(imageNames):
 	imageNames.sort()
 	i = 0
@@ -280,11 +284,10 @@ def reorderImages(imageNames):
 
 if __name__ == "__main__":
 	images = []
-	for name in reorderImages(os.listdir("../screencaps/")):
+	for name in reorderImages(os.listdir("../images/trainingData")):
 		if name[-4:] == ".png":
-			images.append(Image.open("../screencaps/" + name))
+			images.append(Image.open("../images/trainingData/" + name))
 
 	p = ScreenshotParser()
 	cards = p.getCardsFromImages(images)
 	print "Here " + str(len(cards))
-	
