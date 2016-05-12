@@ -1,14 +1,17 @@
 import json
+import pprint
 
+# Get this file from https://hearthstonejson.com/
 with open("cards.collectible.json", "r") as f:
 	cardsJSON = json.loads(f.read())
 
-# Levels: Hero, type, rarity, cost
+# Levels in tree: Hero, type, rarity, cost
 playerClasses = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "Neutral"]
 cardTypes     = ["Minion", "Spell", "Weapon"]
 rarities      = ["Free", "Common", "Rare", "Epic", "Legendary"]
 costs         = range(11) + [12, 20]
 
+# Tree dictionary
 cards = {}
 
 minAttack = []
@@ -16,25 +19,10 @@ minHealth = []
 wepAttack = []
 wepDurab = []
 
-
-sets = { "CORE"   : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "EXPERT1": {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "NAXX"   : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "GVG"    : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "BRM"    : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "TGT"    : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "LOE"    : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "REWARD" : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0},
-         "PROMO"  : {"Free": 0, "Common": 0, "Rare": 0, "Epic": 0, "Legendary": 0}}
-for card in cardsJSON:
-	sets[card["set"]][card["rarity"]] += 1
-
-print sets
-raw_input()
-
+# Whether to use minion attack/health and weapon attack/durability
 usingAttributes = False
 
-# Get all the values to build up our card "database"
+# Get all the values to build up our card tree
 if usingAttributes:
 	for card in cardsJSON:
 		if card["type"] == "Minion":
@@ -49,7 +37,8 @@ if usingAttributes:
 			if int(card["durability"]) not in wepDurab:
 				wepDurab.append(int(card["durability"]))
 
-# Build the structure of our card "database"
+
+# Build the structure of our card tree
 for playerClass in playerClasses:
 	cards[playerClass] = {}
 	for cardType in cardTypes:
@@ -72,7 +61,7 @@ for playerClass in playerClasses:
 						for durability in wepDurab:
 							cards[playerClass][cardType][rarity][cost][attack][durability] = []
 
-# Fill out our "database"
+# Fill out our tree
 for card in cardsJSON:
 	if "playerClass" not in card:
 		playerClass = "Neutral"
@@ -99,7 +88,7 @@ for card in cardsJSON:
 		durability = int(card["durability"])
 		cards[playerClass][cardType][rarity][cost][attack][durability].append(myCard)
 
-# Most confusing part. I'm just removing empty sections because there's no point keeping them
+# Most confusing part. I'm just removing empty branches because there's no point keeping them
 for playerClass in playerClasses:
 	for cardType in cardTypes:
 		for rarity in rarities:
@@ -118,7 +107,7 @@ for playerClass in playerClasses:
 				elif cardType == "Weapon" and usingAttributes:
 					for attack in wepAttack:
 						for durability in wepDurab:
-							if len(cards[playerClass][cardType][rarity][cost][attack][durability]) == 0:
+							if len(cards[palyerClass][cardType][rarity][cost][attack][durability]) == 0:
 								del cards[playerClass][cardType][rarity][cost][attack][durability]
 						if len(cards[playerClass][cardType][rarity][cost][attack].keys()) == 0:
 							del cards[playerClass][cardType][rarity][cost][attack]
@@ -133,7 +122,7 @@ for playerClass in playerClasses:
 		if len(cards[playerClass][cardType].keys()) == 0:
 				del cards[playerClass][cardType]
 
-# Just so I can see how long things are
+# This last bit is just so I can get those nice stats on the size of this thing at the end.
 maxLen = 0
 longest = []
 meanLen = 0
@@ -173,9 +162,12 @@ for playerClass in playerClasses:
 						longest = [playerClass, cardType, rarity, cost]
 
 meanLen = float(meanLen) / float(count)
-print maxLen
-print longest
-print meanLen
+print "There are " + str(count) + " collectible cards in hearthstone"
+print "Most cards in one leaf: " + str(maxLen)
+print "This is said leaf: " + str(longest)
+print "Mean leaf length: " + str(meanLen)
+print "Lengths of all leaves (sorted): "
 print sorted(allLens)
-
-print cards
+print "Actual tree: "
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(cards)
