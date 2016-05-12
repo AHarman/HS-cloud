@@ -5,6 +5,7 @@ import math
 import json
 from   app_engine.utils import *
 from app_engine.cardReader import Card, ScreenshotParser
+from trainingDataInfo import *
 
 class TestingDataCreator:
 
@@ -94,7 +95,7 @@ class TestingDataCreator:
 
 		for card in cards:
 			actualMana = actualManas[count]
-			res = self.screenshotParser.getCardMana(card, minMana)
+			res = self.screenshotParser.getCardMana(card, minMana, True)
 
 			for i in range(11) + [12, 20]:
 				metricsMeanAll[actualMana][i] += res[i]
