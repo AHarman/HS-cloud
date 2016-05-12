@@ -121,11 +121,11 @@ class ProcessingHandler(webapp2.RequestHandler):
 						entry = results[i]
 						entry.index = i;
 						entry.put()
-					for i in range(0, len(results), 5):
+					for i in range(0, len(results), 3):
 						taskqueue.add(queue_name="imageprocessing",
 						              url='/worker', params={"userID": user.user_id(),
-							                                 "minIndex": i,
-							                                 "maxIndex": min(i + 5, len(results))})
+						                                     "minIndex": i,
+						                                     "maxIndex": min(i + 3, len(results))})
 					self.response.out.write(PROCESSING_PAGE_HTML)
 			except Exception as e:
 				print e
