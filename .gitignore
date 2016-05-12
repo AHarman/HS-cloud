@@ -1,8 +1,9 @@
 temp
-stuffFromServer
-compImages
-screencaps
-cardImages
 *.pyc
 *.swp
 *~
+*.directory
+images/cardImages/*.png
+images/testData/*.png
+images/trainingData/*.png
+images/compImages/*.bmp
