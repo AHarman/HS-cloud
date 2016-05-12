@@ -3,33 +3,11 @@ import Image
 import numpy as np
 import math
 import json
-from   utils import *
-from cardReader import Card, ScreenshotParser
+from   app_engine.utils import *
+from app_engine.cardReader import Card, ScreenshotParser
+from trainingDataInfo import *
 
-# def createCumulativeManaImages():
-# 	with open("cards.collectible.json", "r") as f:
-# 		cardsJSON = json.loads(f.read())
-# 	cumManaImages = {}
-# 	manaLocation  = [20, 30, 50, 70]
-# 	manaThreshold = 245
-# 	for i in range(11) + [12, 20]:
-# 		cumManaImages[i] = np.zeros((40, 30), dtype=np.uint8)
-
-# 	for card in cardsJSON:
-# 		mana = int(card["cost"])
-# 		cardImage = Image.open("cardImages/" + card["name"] + ".png")
-# 		cardImage = cardImage.resize((247, 339), Image.ANTIALIAS)
-# 		manaImage = imgToBW(cardImage.crop(manaLocation), manaThreshold)
-# 		cumManaImage = cumManaImages[mana]
-# 		for row in range(len(manaImage)):
-# 			for col in range(len(manaImage[row])):
-# 				if manaImage[row, col] == 0xFF:
-# 					cumManaImage[row, col] += 1
-
-# 	cumManaImages = normaliseManaImages(cumManaImages)
-# 	for i in range(11) + [12, 20]:
-# 		Image.fromarray(cumManaImages[i]).save("./compImages/mana-" + str(i) + ".bmp", "BMP")
-class trainingDataBuilder:
+class TestingDataCreator:
 
 	def __init__(self):
 		self.screenshotParser = ScreenshotParser()
@@ -57,7 +35,7 @@ class trainingDataBuilder:
 
 		cumManaImages = self.normaliseImages(cumManaImages)
 		for i in range(11) + [12, 20]:
-			Image.fromarray(cumManaImages[i]).save("./compImages/mana-" + str(i) + ".bmp", "BMP")
+			Image.fromarray(cumManaImages[i]).save("./images/compImages/mana-" + str(i) + ".bmp", "BMP")
 
 	def createCumlativeMinAttImages(self, cards):
 		global minAttacks
@@ -151,7 +129,7 @@ class trainingDataBuilder:
 
 		for card in cards:
 			actualMana = actualManas[count]
-			res = self.screenshotParser.getCardMana(card, minMana)
+			res = self.screenshotParser.getCardMana(card, minMana, True)
 
 			for i in range(11) + [12, 20]:
 				metricsMeanAll[actualMana][i] += res[i]
@@ -255,15 +233,14 @@ class trainingDataBuilder:
 					card.cardType = self.screenshotParser.getCardType(card)
 					card.golden = self.screenshotParser.isGolden(card)
 					#card.mana = actualManas[count]
-
-
+					#card.cardImage.save("./images/temp/" + str(count) + ".bmp", "BMP")
 					count += 1
 					print "Card " + str(count)
 		return cards
 
 if __name__ == "__main__":
-	p = trainingDataBuilder()
-	cards = p.getCardsFromImages("./screencaps/")
+	p = TestingDataCreator()
+	cards = p.getCardsFromImages("./images/trainingData/")
 	#p.createCumulativeManaImages(cards)
 	#p.createCumlativeMinAttImages(cards)
 	#p.getManaMetrics(cards)
