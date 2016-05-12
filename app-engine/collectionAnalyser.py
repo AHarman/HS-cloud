@@ -1,4 +1,4 @@
-from cardTreeDict import CardTree
+from cardTreeDict import cardTree
 from cardReader import Card, ScreenshotParser
 import ast
 
@@ -152,7 +152,7 @@ class Analyser:
 
 		for i in range(len(tempList)):
 			card = tempList[i]
-			possibilities = [x["Name"] for x in cardDict[card.hero][card.cardType][card.rarity][card.mana]]
+			possibilities = [x["Name"] for x in cardTree[card.hero][card.cardType][card.rarity][card.mana]]
 			self.cardKnowledge.append({"names":    possibilities,
 			                           "hero":     card.hero,
 			                           "mana":     card.mana, 
