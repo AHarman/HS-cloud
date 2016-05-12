@@ -198,9 +198,9 @@ def reorderImages(imageNames):
 
 if __name__ == "__main__":
 	images = []
-	for name in reorderImages(os.listdir("../screencaps/")):
+	for name in reorderImages(os.listdir("../images/trainingData")):
 		if name[-4:] == ".png":
-			images.append(Image.open("../screencaps/" + name))
+			images.append(Image.open("../images/trainingData/" + name))
 
 	p = ScreenshotParser()
 	cards = p.getCardsFromImages(images)
