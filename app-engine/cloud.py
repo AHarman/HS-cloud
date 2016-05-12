@@ -18,8 +18,9 @@ MAIN_PAGE_HTML = """\
 	<script src="scripts/upload.js"></script> 
 	<body>
 		<h1>Hearthstone analyser</h1>
+		<p>Please select <b>all</b> of your screenshots before submitting</p>
 		<form method="POST" action={0} enctype="multipart/form-data">
-			<label for="title">Upload screenshots </label>
+			<label for="title">Select screenshots: </label>
 			<input type="file" name="screenshot" id="files" multiple/>
 			<button type="button" onclick="upload()">Upload</button>
 		</form>
