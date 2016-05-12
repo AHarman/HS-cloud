@@ -1,4 +1,4 @@
-from bigDict import cardDict
+from cardTreeDict import CardTree
 from cardReader import Card, ScreenshotParser
 import ast
 

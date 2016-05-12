@@ -1,5 +1,5 @@
 
-cardDict = {
+cardTree = {
 	'Warlock': {
 		'Minion': {
 			'Legendary': {
