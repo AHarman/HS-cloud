@@ -1,4 +1,4 @@
-#A tool to analyse a [Hearthstone](playhearthstone.com) card collection
+#A tool to analyse a [Hearthstone](https://playhearthstone.com) card collection
 
 When I first created this there was no existing tool to analyse a Hearthstone card collection automatically, the only methods available required manually entering cards one-by-one which is tedious, error-prone and will have to be repeated as cards are gained and disenchanted.
 
